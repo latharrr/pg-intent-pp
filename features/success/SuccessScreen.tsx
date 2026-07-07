@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useJourneyStore, useRecommendedAreaName } from "@/lib/store/useJourneyStore";
 import { getPGById } from "@/lib/data/pgs";
 import { SuccessState } from "@/components/SuccessState";
@@ -13,6 +14,7 @@ import { useFocusOnChange } from "@/utils/useFocusOnChange";
 import { track } from "@/lib/analytics";
 
 export function SuccessScreen() {
+  const router = useRouter();
   const profile = useJourneyStore((state) => state.profile);
   const bestAreaName = useRecommendedAreaName();
   const shortlistedPgs = profile.shortlistedPgIds.map((id) => getPGById(id)).filter(Boolean);
@@ -42,7 +44,7 @@ export function SuccessScreen() {
           <Button
             onClick={() => {
               track("download_app_click", { from: "success" });
-              window.location.href = "/pg-download.html";
+              router.push(ROUTES.pgDownload);
             }}
           >
             Download Picapool App

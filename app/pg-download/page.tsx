@@ -1,0 +1,145 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { Button } from "@/components/Button";
+import { Home, GraduationCap, TrainFront, Trees, Dumbbell, UtensilsCrossed, MessageCircle, ChevronLeft } from "lucide-react";
+import { ROUTES } from "@/constants/routes";
+import { track } from "@/lib/analytics";
+
+const LOCATIONS = [
+  { icon: GraduationCap, label: "Hindu College", dist: "5 min walk", x: 15, y: 18 },
+  { icon: TrainFront, label: "Metro", dist: "3 min walk", x: 85, y: 18 },
+  { icon: Trees, label: "Park", dist: "4 min walk", x: 85, y: 82 },
+  { icon: Dumbbell, label: "Gym", dist: "6 min walk", x: 15, y: 82 },
+  { icon: UtensilsCrossed, label: "Food Street", dist: "2 min walk", x: 50, y: 94 },
+];
+
+const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_PICAPOOL_WHATSAPP_NUMBER;
+
+export default function PGDownloadPage() {
+  const router = useRouter();
+  const [phase, setPhase] = useState(0);
+  const [showCta, setShowCta] = useState(false);
+
+  useEffect(() => {
+    const timers = [
+      setTimeout(() => setPhase(1), 80),
+      setTimeout(() => setPhase(2), 400),
+      setTimeout(() => setPhase(3), 900),
+      setTimeout(() => setShowCta(true), 1200),
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  function handleCta() {
+    track("download_app_click", { from: "pg-download" });
+    if (WHATSAPP_NUMBER) {
+      const text = encodeURIComponent("Hi Picapool! I want early access to the Picapool app for PG hunting near North Campus.");
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, "_blank", "noopener,noreferrer");
+    } else {
+      router.push(ROUTES.contact);
+    }
+  }
+
+  return (
+    <div className="flex min-h-svh flex-col items-center bg-background px-6 py-6">
+      <div className="w-full max-w-sm flex-1">
+        <button
+          type="button"
+          onClick={() => router.push(ROUTES.results)}
+          aria-label="Back to results"
+          className="inline-flex items-center gap-1 text-[13px] text-ink/60 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-selected"
+        >
+          <ChevronLeft className="size-4" />
+          Back
+        </button>
+
+        <div className="mt-5 flex flex-col gap-2">
+          <h1 className="text-[26px] font-semibold leading-tight text-ink">
+            Your PG. Everything near it.
+          </h1>
+          <p className="text-[14px] leading-relaxed text-muted-foreground">
+            Picapool helps you find a PG close to college, metro, food, and gym. One app. No broker runs.
+          </p>
+        </div>
+
+        <div className="relative mt-8 h-[320px] w-full sm:h-[360px]">
+          <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            {LOCATIONS.map((loc, index) => (
+              <motion.line
+                key={loc.label}
+                x1="50"
+                y1="50"
+                x2={loc.x}
+                y2={loc.y}
+                stroke="#B8B5AD"
+                strokeWidth="0.6"
+                strokeDasharray="2 3"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{
+                  pathLength: phase >= 2 ? 1 : 0,
+                  opacity: phase >= 1 ? 1 : 0,
+                }}
+                transition={{ duration: 0.5, delay: index * 0.06, ease: "easeOut" }}
+              />
+            ))}
+          </svg>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 18 }}
+            className="absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 rounded-2xl border-[1.5px] border-ink/10 bg-white px-5 py-4 shadow-sm"
+          >
+            <Home className="size-7 text-ink" />
+            <span className="whitespace-nowrap text-[14px] font-semibold text-ink">Vijay Comfort PG</span>
+            <span className="text-[11px] font-medium text-match">Picapool Verified</span>
+            <span className="text-[13px] font-semibold text-ink">₹11,500/mo</span>
+          </motion.div>
+
+          {LOCATIONS.map((loc, index) => {
+            const Icon = loc.icon;
+            return (
+              <motion.div
+                key={loc.label}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: phase >= 3 ? 1 : 0, scale: phase >= 3 ? 1 : 0.8 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                style={{ left: `${loc.x}%`, top: `${loc.y}%`, transform: "translate(-50%, -50%)" }}
+                className="absolute z-10 flex min-w-[92px] flex-col items-center gap-1 rounded-xl border-[1.5px] border-ink/10 bg-white px-3 py-2 shadow-sm"
+              >
+                <Icon className="size-4 text-ink" />
+                <span className="text-[11px] font-semibold text-ink">{loc.label}</span>
+                <span className="text-[10px] text-muted-foreground">{loc.dist}</span>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: showCta ? 1 : 0, y: showCta ? 0 : 12 }}
+          transition={{ duration: 0.3 }}
+          className="mt-6 flex flex-col items-center gap-3"
+        >
+          <Button onClick={handleCta} className="w-full gap-2">
+            <MessageCircle className="size-4" />
+            Get Picapool App
+          </Button>
+          <p className="text-center text-[12px] text-muted-foreground">
+            Free. No spam. Get alerts when verified PGs near your college go live.
+          </p>
+          <button
+            type="button"
+            onClick={() => router.push(ROUTES.results)}
+            className="text-center text-[13px] text-ink/60 underline underline-offset-4 hover:text-ink"
+          >
+            Continue without app
+          </button>
+        </motion.div>
+      </div>
+    </div>
+  );
+}

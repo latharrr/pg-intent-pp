@@ -110,7 +110,7 @@ export default function ResultsPage() {
               onToggleShortlist={() => toggleShortlist(topMatch.pg.id)}
               onVirtualVisit={() => {
                 track("virtual_visit_click", { pgId: topMatch.pg.id });
-                window.location.href = "/pg-download.html";
+                router.push(ROUTES.pgDownload);
               }}
             />
           </div>
