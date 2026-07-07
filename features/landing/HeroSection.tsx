@@ -46,7 +46,7 @@ export function HeroSection() {
   }, [isPaused, isLast, next]);
 
   return (
-    <section className="flex h-[calc(100svh-72px)] flex-col items-center justify-center gap-8 px-6 py-6">
+    <section className="flex min-h-[calc(100svh-72px)] flex-col items-center justify-center gap-8 px-6 py-6">
       <div
         className="relative w-full max-w-sm flex-1 cursor-pointer"
         onClick={next}

@@ -15,7 +15,7 @@ export default function JourneyLayout({ children }: { children: React.ReactNode 
 
   return (
     <div className="flex min-h-svh justify-center bg-background md:bg-muted md:py-6">
-      <div className="flex w-full max-w-[430px] flex-1 flex-col overflow-hidden bg-background md:rounded-[32px] md:border-[3px] md:border-ink md:shadow-lg">
+      <div className="flex w-full max-w-[430px] flex-1 flex-col overflow-y-auto overflow-x-hidden bg-background md:rounded-[32px] md:border-[3px] md:border-ink md:shadow-lg">
         <main className="flex flex-1 flex-col">{children}</main>
         <JourneyFooter
           currentStep={footerStep}
