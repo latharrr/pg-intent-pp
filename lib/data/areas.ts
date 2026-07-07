@@ -1,0 +1,73 @@
+import type { Area } from "@/types";
+
+export const AREAS: Area[] = [
+  {
+    id: "kamla-nagar",
+    name: "Kamla Nagar",
+    vibeTag: "buzzing",
+    avgRentPerMonth: 13000,
+    walkTimeToCampusMin: 8,
+    nearestCollegeId: "hindu-college",
+    nearestMetroName: "GTB Nagar metro",
+    normalizedX: 45,
+    normalizedY: 40,
+    description: "Buzzing, close to Hindu College and Miranda House.",
+    safetyTag: "well-lit main market",
+  },
+  {
+    id: "hudson-lane",
+    name: "Hudson Lane",
+    vibeTag: "social",
+    avgRentPerMonth: 15000,
+    walkTimeToCampusMin: 12,
+    nearestCollegeId: "hansraj-college",
+    nearestMetroName: "GTB Nagar metro",
+    normalizedX: 60,
+    normalizedY: 30,
+    description: "Social, near GTB Nagar metro, cafes and late-night food.",
+    safetyTag: "busy till late",
+  },
+  {
+    id: "vijay-nagar",
+    name: "Vijay Nagar",
+    vibeTag: "dense, budget-friendly",
+    avgRentPerMonth: 11000,
+    walkTimeToCampusMin: 15,
+    nearestCollegeId: "ramjas-college",
+    nearestMetroName: "GTB Nagar metro",
+    normalizedX: 30,
+    normalizedY: 55,
+    description: "Dense, budget-friendly, a short auto from the main campus.",
+    safetyTag: null,
+  },
+  {
+    id: "gtb-nagar",
+    name: "GTB Nagar",
+    vibeTag: "convenient, transit-first",
+    avgRentPerMonth: 14000,
+    walkTimeToCampusMin: 10,
+    nearestCollegeId: "kirori-mal-college",
+    nearestMetroName: "GTB Nagar metro",
+    normalizedX: 65,
+    normalizedY: 45,
+    description: "Right on the metro line, quickest commute to campus.",
+    safetyTag: "well-patrolled",
+  },
+  {
+    id: "mukherjee-nagar",
+    name: "Mukherjee Nagar",
+    vibeTag: "exam-focused",
+    avgRentPerMonth: 11000,
+    walkTimeToCampusMin: 18,
+    nearestCollegeId: null,
+    nearestMetroName: "Model Town metro",
+    normalizedX: 75,
+    normalizedY: 65,
+    description: "Quiet, library-heavy, popular with competitive-exam aspirants.",
+    safetyTag: null,
+  },
+];
+
+export function getAreaById(id: string): Area | undefined {
+  return AREAS.find((area) => area.id === id);
+}
