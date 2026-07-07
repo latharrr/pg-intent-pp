@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/Button";
 import { ROUTES } from "@/constants/routes";
 import { track } from "@/lib/analytics";
@@ -18,51 +18,69 @@ const LINES = [
   "No promises. Just an honest attempt.",
 ];
 
+const AUTO_ROTATE_MS = 2200;
+
 export function HeroSection() {
   const router = useRouter();
   const [step, setStep] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const isLast = step === LINES.length - 1;
 
-  function next() {
+  const start = useCallback(() => {
+    track("continue_click", { from: "hero" });
+    router.push(ROUTES.plan);
+  }, [router]);
+
+  const next = useCallback(() => {
     if (isLast) {
-      track("continue_click", { from: "hero" });
-      router.push(ROUTES.plan);
+      start();
       return;
     }
     setStep((s) => s + 1);
-  }
+  }, [isLast, start]);
+
+  useEffect(() => {
+    if (isPaused || isLast) return;
+    const id = setInterval(next, AUTO_ROTATE_MS);
+    return () => clearInterval(id);
+  }, [isPaused, isLast, next]);
 
   return (
-    <section
-      className="flex h-[calc(100svh-72px)] flex-col items-center justify-center gap-8 px-6 py-6"
-      onClick={next}
-    >
-      <div className="relative w-full max-w-sm flex-1">
-        <div className="flex h-full flex-col justify-center gap-5">
-          {LINES.slice(0, step + 1).map((line) => (
+    <section className="flex h-[calc(100svh-72px)] flex-col items-center justify-center gap-8 px-6 py-6">
+      <div
+        className="relative w-full max-w-sm flex-1 cursor-pointer"
+        onClick={next}
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+        onTouchStart={() => setIsPaused(true)}
+        onTouchEnd={() => setIsPaused(false)}
+      >
+        <div className="flex h-full items-center justify-center">
+          <AnimatePresence mode="wait">
             <motion.p
-              key={line}
-              initial={{ opacity: 0, y: 10 }}
+              key={step}
+              initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35 }}
-              className="text-[19px] font-medium leading-[1.5] text-ink"
+              exit={{ opacity: 0, y: -14 }}
+              transition={{ duration: 0.28, ease: "easeInOut" }}
+              className="text-center text-[21px] font-semibold leading-[1.45] text-ink"
             >
-              {line}
+              {LINES[step]}
             </motion.p>
-          ))}
+          </AnimatePresence>
         </div>
       </div>
 
-      <div className="flex w-full max-w-sm flex-col items-center gap-2.5">
+      <div className="flex w-full max-w-sm flex-col items-center gap-3">
         <Button
           onClick={(e) => {
             e.stopPropagation();
-            next();
+            start();
           }}
           className="w-full gap-1"
         >
-          {isLast ? "Plan My PG Hunt" : "Next"}
-          {!isLast && <ChevronRight className="size-4" />}
+          Plan My PG Hunt
+          <ChevronRight className="size-4" />
         </Button>
         <p className="text-[11px] text-muted-foreground">Takes 30 seconds. No spam.</p>
       </div>

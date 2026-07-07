@@ -16,10 +16,10 @@ import { track } from "@/lib/analytics";
 import { useFocusOnChange } from "@/utils/useFocusOnChange";
 import { BUDGET_BAND_LABELS, ROOM_TYPE_LABELS, MOVE_TIMELINE_LABELS } from "@/types/enums";
 import type { PG, PgMatch, UserProfile } from "@/types";
-import { MessageCircle, Phone } from "lucide-react";
+import { MessageCircle, Phone, ChevronLeft } from "lucide-react";
 
 const ONBOARDING_DATE = "July 20";
-const OVERLAY_DURATION_MS = 1400;
+const OVERLAY_DURATION_MS = 900;
 
 function formatSummary(profile: UserProfile) {
   const landing = profile.moveTimeline ? MOVE_TIMELINE_LABELS[profile.moveTimeline] : "-";
@@ -74,6 +74,20 @@ export default function ResultsPage() {
 
   return (
     <div ref={containerRef} className="flex flex-1 flex-col gap-5 px-6 py-6">
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => router.push(ROUTES.plan)}
+          aria-label="Back to plan"
+          className="-ml-1.5 flex size-9 items-center justify-center rounded-lg text-ink/60 transition-colors hover:bg-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-selected"
+        >
+          <ChevronLeft className="size-5" />
+        </button>
+        <div className="flex-1">
+          <p className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground">Your plan</p>
+        </div>
+      </div>
+
       <div className="flex flex-col gap-3">
         <Doodle name="map" className="self-start" />
         <div className="flex flex-col gap-1">
@@ -96,7 +110,7 @@ export default function ResultsPage() {
               onToggleShortlist={() => toggleShortlist(topMatch.pg.id)}
               onVirtualVisit={() => {
                 track("virtual_visit_click", { pgId: topMatch.pg.id });
-                window.open("/pg-download", "_blank", "noopener,noreferrer");
+                window.location.href = "/pg-download.html";
               }}
             />
           </div>

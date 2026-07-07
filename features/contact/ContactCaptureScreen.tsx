@@ -15,7 +15,7 @@ import { useFocusOnChange } from "@/utils/useFocusOnChange";
 import { BUDGET_BAND_LABELS, MOVE_TIMELINE_LABELS, ROOM_TYPE_LABELS } from "@/types/enums";
 import type { Lead } from "@/types";
 import { emailFallbackSchema, leadDetailsSchema, type EmailFallbackValues, type LeadDetailsValues } from "./contactSchema";
-import { MessageCircle, Mail, Send, Smartphone, Bell, ShieldCheck } from "lucide-react";
+import { MessageCircle, Mail, Send, Smartphone, Bell, ShieldCheck, ChevronLeft } from "lucide-react";
 import { Doodle } from "@/components/Doodle";
 
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_PICAPOOL_WHATSAPP_NUMBER;
@@ -113,12 +113,23 @@ export function ContactCaptureScreen() {
 
   return (
     <div ref={containerRef} className="flex flex-1 flex-col gap-5 px-6 py-6">
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => router.push(ROUTES.results)}
+          aria-label="Back to results"
+          className="-ml-1.5 flex size-9 items-center justify-center rounded-lg text-ink/60 transition-colors hover:bg-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-selected"
+        >
+          <ChevronLeft className="size-5" />
+        </button>
+        <div className="flex-1">
+          <p className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground">Almost done</p>
+        </div>
+      </div>
+
       <div className="flex flex-col gap-3">
         <Doodle name="lock" className="self-start" />
-        <div className="flex flex-col gap-1.5">
-          <p className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground">Almost done</p>
-          <h2 className="text-[22px] font-semibold leading-tight text-ink">Get your plan on WhatsApp</h2>
-        </div>
+        <h2 className="text-[22px] font-semibold leading-tight text-ink">Get your plan on WhatsApp</h2>
       </div>
 
       {/* Plan preview */}

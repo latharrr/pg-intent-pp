@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { Button } from "@/components/Button";
 
-const AUTO_ADVANCE_MS = 1400;
+const AUTO_ADVANCE_MS = 800;
 
 export interface NarrativeBridgeScreenProps {
   message: string;

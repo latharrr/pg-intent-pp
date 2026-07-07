@@ -42,7 +42,7 @@ export function SuccessScreen() {
           <Button
             onClick={() => {
               track("download_app_click", { from: "success" });
-              window.open("/pg-download", "_blank", "noopener,noreferrer");
+              window.location.href = "/pg-download.html";
             }}
           >
             Download Picapool App
