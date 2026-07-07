@@ -1,6 +1,6 @@
 "use client";
 
-import { useJourneyStore, useFooterStep, useRecommendedAreaName } from "@/lib/store/useJourneyStore";
+import { useJourneyStore, useFooterStep } from "@/lib/store/useJourneyStore";
 import { JourneyFooter } from "@/components/JourneyFooter";
 import { TOTAL_FOOTER_STEPS } from "@/lib/journey/footerSteps";
 
@@ -12,7 +12,6 @@ import { TOTAL_FOOTER_STEPS } from "@/lib/journey/footerSteps";
 export default function JourneyLayout({ children }: { children: React.ReactNode }) {
   const animationState = useJourneyStore((state) => state.journey.animationState);
   const footerStep = useFooterStep();
-  const recommendedAreaName = useRecommendedAreaName();
 
   return (
     <div className="flex min-h-svh justify-center bg-background md:bg-muted md:py-6">
@@ -21,7 +20,7 @@ export default function JourneyLayout({ children }: { children: React.ReactNode 
         <JourneyFooter
           currentStep={footerStep}
           totalSteps={TOTAL_FOOTER_STEPS}
-          recommendedArea={recommendedAreaName}
+          recommendedArea={null}
           animationState={animationState}
         />
       </div>
