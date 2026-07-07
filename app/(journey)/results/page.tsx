@@ -96,7 +96,7 @@ export default function ResultsPage() {
               onToggleShortlist={() => toggleShortlist(topMatch.pg.id)}
               onVirtualVisit={() => {
                 track("virtual_visit_click", { pgId: topMatch.pg.id });
-                window.open("/pg-download.html", "_blank", "noopener,noreferrer");
+                window.open("/pg-download", "_blank", "noopener,noreferrer");
               }}
             />
           </div>
