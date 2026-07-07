@@ -71,7 +71,25 @@ export function HeroSection() {
         </div>
       </div>
 
-      <div className="flex w-full max-w-sm flex-col items-center gap-3">
+      <div className="flex w-full max-w-sm flex-col items-center gap-4">
+        <div className="flex items-center gap-2" aria-label="Story progress">
+          {LINES.map((_, index) => (
+            <button
+              key={index}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setStep(index);
+              }}
+              aria-label={`Go to line ${index + 1}`}
+              aria-current={index === step ? "step" : undefined}
+              className={`h-2 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-selected ${
+                index === step ? "w-6 bg-selected" : "w-2 bg-ink/20 hover:bg-ink/40"
+              }`}
+            />
+          ))}
+        </div>
+
         <Button
           onClick={(e) => {
             e.stopPropagation();
