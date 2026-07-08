@@ -81,8 +81,10 @@ export function Doodle({ name, className }: DoodleProps) {
     ),
     walk: (
       <svg viewBox="0 0 48 48" aria-hidden className="h-full w-full">
-        <ellipse cx="14" cy="34" rx="6" ry="9" transform="rotate(-15 14 34)" {...common} />
-        <ellipse cx="32" cy="16" rx="6" ry="9" transform="rotate(15 32 16)" {...common} />
+        <ellipse cx="23" cy="30" rx="10" ry="14" fill={stroke} />
+        <circle cx="15" cy="12" r="3.4" fill={stroke} />
+        <circle cx="24" cy="8" r="3.8" fill={stroke} />
+        <circle cx="33" cy="12" r="3.4" fill={stroke} />
       </svg>
     ),
   };

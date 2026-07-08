@@ -129,6 +129,7 @@ export function ResultsView({ pgs }: ResultsViewProps) {
     track("lead_submitted", { leadScore, budgetBand: profile.budgetBand, roomType: profile.roomType, source: "virtual_visit" });
   }
 
+  const hasPhone = Boolean(profile.phone);
   const captureContext = hasMatch ? "match" : "no_match";
   const showMoreComingBox = hasMatch && matchedPgs.length <= 2 && !dismissedMoreComing;
 
@@ -209,7 +210,13 @@ export function ResultsView({ pgs }: ResultsViewProps) {
             </div>
           )}
 
-          <InlineWhatsAppCapture onSubmit={handleWhatsAppSubmit} context={captureContext} />
+          {hasPhone ? (
+            <p className="text-center text-[13px] text-muted-foreground">
+              ✓ We&apos;ve got your number — we&apos;ll WhatsApp you.
+            </p>
+          ) : (
+            <InlineWhatsAppCapture onSubmit={handleWhatsAppSubmit} context={captureContext} />
+          )}
         </div>
       ) : (
         <div className="flex flex-1 flex-col gap-5">
@@ -234,7 +241,13 @@ export function ResultsView({ pgs }: ResultsViewProps) {
             </ul>
           </div>
 
-          <InlineWhatsAppCapture onSubmit={handleWhatsAppSubmit} context="no_match" />
+          {hasPhone ? (
+            <p className="text-center text-[13px] text-muted-foreground">
+              ✓ We&apos;ve got your number — we&apos;ll WhatsApp you.
+            </p>
+          ) : (
+            <InlineWhatsAppCapture onSubmit={handleWhatsAppSubmit} context="no_match" />
+          )}
 
           <p className="text-center text-[12px] text-muted-foreground">
             Know a PG owner near North Campus?{" "}
