@@ -2,16 +2,16 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, TrendingUp, BarChart3, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronUp } from "lucide-react";
 import { useJourneyStore, useRecommendedAreaName } from "@/lib/store/useJourneyStore";
 import { runMatching } from "@/lib/matching/runMatching";
 import { AREAS } from "@/lib/data/areas";
 import { COLLEGES } from "@/lib/data/colleges";
 import { PGCard } from "@/components/PGCard";
 import { VirtualVisitModal } from "@/components/VirtualVisitModal";
-import { PgCompareModal } from "@/components/PgCompareModal";
 import { InlineWhatsAppCapture } from "@/components/InlineWhatsAppCapture";
 import { SuccessModal } from "@/components/SuccessModal";
+import { Doodle } from "@/components/Doodle";
 import { useFocusOnChange } from "@/utils/useFocusOnChange";
 import { BUDGET_BAND_LABELS, ROOM_TYPE_LABELS, MOVE_TIMELINE_LABELS } from "@/types/enums";
 import { buildShareTextFromIds } from "@/utils/sharePlan";
@@ -45,11 +45,9 @@ export function ResultsView({ pgs }: ResultsViewProps) {
   const updateProfile = useJourneyStore((state) => state.updateProfile);
   const goToStep = useJourneyStore((state) => state.goToStep);
   const setRecommendedArea = useJourneyStore((state) => state.setRecommendedArea);
-  const toggleShortlist = useJourneyStore((state) => state.toggleShortlist);
   const recommendedAreaName = useRecommendedAreaName();
   const [showAllMatches, setShowAllMatches] = useState(false);
   const [visitPg, setVisitPg] = useState<PG | null>(null);
-  const [showCompare, setShowCompare] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [dismissedMoreComing, setDismissedMoreComing] = useState(false);
   const containerRef = useFocusOnChange<HTMLDivElement>("results");
@@ -84,8 +82,6 @@ export function ResultsView({ pgs }: ResultsViewProps) {
 
   const summary = formatSummary(profile);
   const hasMatch = matchedPgs.length > 0;
-  const shortlistedCount = profile.shortlistedPgIds.length;
-  const hasShortlist = shortlistedCount > 0;
 
   function handleShare(pgId?: string) {
     track("share_click", { from: "results", pgId });
@@ -98,7 +94,7 @@ export function ResultsView({ pgs }: ResultsViewProps) {
     void navigator.clipboard.writeText(text);
   }
 
-  async function handleWhatsAppSubmit(phone: string) {
+  async function submitLead(phone: string) {
     const leadScore = computeLeadScore(profile.moveTimeline);
     updateProfile({ phone, leadScore, whatsappOptIn: true, name: null });
 
@@ -119,12 +115,21 @@ export function ResultsView({ pgs }: ResultsViewProps) {
     });
 
     sessionStorage.setItem("pica_completed", "1");
-    track("lead_submitted", { leadScore, budgetBand: profile.budgetBand, roomType: profile.roomType });
+    return leadScore;
+  }
 
+  async function handleWhatsAppSubmit(phone: string) {
+    const leadScore = await submitLead(phone);
+    track("lead_submitted", { leadScore, budgetBand: profile.budgetBand, roomType: profile.roomType, source: "results" });
     setShowSuccess(true);
   }
 
-  const captureContext = hasShortlist ? "shortlist" : hasMatch ? "match" : "no_match";
+  async function handleVirtualVisitPhone(phone: string) {
+    const leadScore = await submitLead(phone);
+    track("lead_submitted", { leadScore, budgetBand: profile.budgetBand, roomType: profile.roomType, source: "virtual_visit" });
+  }
+
+  const captureContext = hasMatch ? "match" : "no_match";
   const showMoreComingBox = hasMatch && matchedPgs.length <= 2 && !dismissedMoreComing;
 
   return (
@@ -143,34 +148,13 @@ export function ResultsView({ pgs }: ResultsViewProps) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-1">
-        <h1 className="text-[24px] font-semibold leading-tight text-ink">Your PG Hunt Plan is Ready 🎯</h1>
-        <p className="text-[13px] text-muted-foreground">
-          Based on: Landing {summary.landing} | Budget {summary.budget} | {summary.room}
-        </p>
-        <p className="mt-1 flex items-center gap-1.5 text-[13px] text-muted-foreground">
-          <TrendingUp className="size-3.5" />
-          Students are planning their PG hunt this week
-        </p>
+      <div className="flex flex-col items-center gap-2 text-center">
+        <Doodle name="archery" className="size-16" />
+        <h1 className="text-[24px] font-semibold leading-tight text-ink">Your PG Hunt Plan is Ready</h1>
       </div>
 
       {hasMatch ? (
         <div className="flex flex-1 flex-col gap-5">
-          {shortlistedCount >= 2 && (
-            <button
-              type="button"
-              onClick={() => setShowCompare(true)}
-              className="flex items-center justify-center gap-2 rounded-xl border border-selected/30 bg-selected/5 py-2.5 text-[13px] font-medium text-selected transition-colors hover:bg-selected/10"
-            >
-              <BarChart3 className="size-4" />
-              Compare {shortlistedCount} shortlisted PGs
-            </button>
-          )}
-
-          <p className="text-[13px] leading-relaxed text-muted-foreground">
-            These {Math.min(matchedPgs.length, MAX_VISIBLE_MATCHES)} PGs were picked because they match your budget, room type, and move-in timeline.
-          </p>
-
           <div className="flex flex-col gap-4">
             {visibleMatches.map(({ pg }, index) => (
               <div key={pg.id} className="relative">
@@ -182,8 +166,6 @@ export function ResultsView({ pgs }: ResultsViewProps) {
                 <PGCard
                   pg={pg}
                   nearestCollegeName={recommendedAreaName ?? "Hindu College"}
-                  isShortlisted={profile.shortlistedPgIds.includes(pg.id)}
-                  onToggleShortlist={() => toggleShortlist(pg.id)}
                   onVirtualVisit={() => {
                     track("virtual_visit_click", { pgId: pg.id });
                     setVisitPg(pg);
@@ -275,19 +257,12 @@ export function ResultsView({ pgs }: ResultsViewProps) {
         <VirtualVisitModal
           pg={visitPg}
           isOpen={!!visitPg}
-          isShortlisted={profile.shortlistedPgIds.includes(visitPg.id)}
+          hasPhone={Boolean(profile.phone)}
           onClose={() => setVisitPg(null)}
-          onToggleShortlist={() => toggleShortlist(visitPg.id)}
+          onSubmitPhone={handleVirtualVisitPhone}
           onShare={() => handleShare(visitPg.id)}
         />
       )}
-
-      <PgCompareModal
-        shortlistedPgIds={profile.shortlistedPgIds}
-        nearestCollegeName={recommendedAreaName ?? "Hindu College"}
-        isOpen={showCompare}
-        onClose={() => setShowCompare(false)}
-      />
 
       <SuccessModal isOpen={showSuccess} onClose={() => setShowSuccess(false)} />
     </div>

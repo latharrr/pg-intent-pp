@@ -8,9 +8,11 @@ export interface SharePlanInput {
   shortlistedCount: number;
 }
 
+const SITE_URL = "https://pg.picapool.tech";
+
 /**
  * Builds the WhatsApp share message for the "parent looking over shoulder" scenario.
- * Matches the UX spec: one PG highlighted, virtual visit link placeholder, shortlist count, and a short URL.
+ * Matches the UX spec: one PG highlighted, shortlist count, and the live site URL.
  */
 export function buildShareText({ topPg, nearestCollegeName = "Hindu College", shortlistedCount }: SharePlanInput): string {
   const parts = ["Hey, I found a PG plan on Picapool:"];
@@ -20,7 +22,6 @@ export function buildShareText({ topPg, nearestCollegeName = "Hindu College", sh
     if (topPg.distanceToCollegeMin != null) {
       parts.push(`→ ${topPg.distanceToCollegeMin} min from ${nearestCollegeName}`);
     }
-    parts.push("→ Virtual Visit: [link]");
   }
 
   const countLine = shortlistedCount > 0
@@ -28,7 +29,7 @@ export function buildShareText({ topPg, nearestCollegeName = "Hindu College", sh
     : "→ Still exploring more options";
   parts.push(countLine);
 
-  parts.push("\nCheck it out: picapool.in/pg-hunt");
+  parts.push(`\nCheck it out: ${SITE_URL}`);
   return parts.join("\n");
 }
 

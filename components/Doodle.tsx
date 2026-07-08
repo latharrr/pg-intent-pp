@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-export type DoodleName = "calendar" | "wallet" | "room" | "map" | "party" | "lock" | "check";
+export type DoodleName = "calendar" | "wallet" | "room" | "map" | "party" | "lock" | "check" | "archery";
 
 export interface DoodleProps {
   name: DoodleName;
@@ -68,6 +68,15 @@ export function Doodle({ name, className }: DoodleProps) {
       <svg viewBox="0 0 48 48" aria-hidden className="h-full w-full">
         <circle cx="24" cy="24" r="16" {...common} />
         <path d="M16 24l6 6 10-12" {...common} />
+      </svg>
+    ),
+    archery: (
+      <svg viewBox="0 0 48 48" aria-hidden className="h-full w-full">
+        <circle cx="26" cy="22" r="16" {...common} />
+        <circle cx="26" cy="22" r="10" {...common} />
+        <circle cx="26" cy="22" r="4" {...common} />
+        <path d="M26 22L8 40" {...common} />
+        <path d="M8 40l6-1.5M8 40l1.5-6" {...common} />
       </svg>
     ),
   };
