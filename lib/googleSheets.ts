@@ -85,6 +85,10 @@ export async function fetchPGsFromSheet(): Promise<PG[]> {
  *
  * Expected sheet columns (header row):
  * timestamp | name | phone | email | whatsappOptIn | budgetBand | roomType | moveTimeline | bestAreaName | leadScore
+ *
+ * When GOOGLE_LEAD_SHEET_ID and GOOGLE_PG_SHEET_ID point to the same spreadsheet
+ * (one sheet, two tabs), leads go to the second tab (index 1) so they don't
+ * collide with the PG inventory on the first tab.
  */
 export async function appendLeadToSheet(lead: Lead & { bestAreaName?: string | null }): Promise<void> {
   if (!LEAD_SHEET_ID || !GOOGLE_SERVICE_ACCOUNT_EMAIL || !GOOGLE_PRIVATE_KEY) {
@@ -93,7 +97,8 @@ export async function appendLeadToSheet(lead: Lead & { bestAreaName?: string | n
 
   const doc = new GoogleSpreadsheet(LEAD_SHEET_ID, getAuth());
   await doc.loadInfo();
-  const sheet = doc.sheetsByIndex[0];
+  const sharedSpreadsheet = LEAD_SHEET_ID === PG_SHEET_ID;
+  const sheet = sharedSpreadsheet ? (doc.sheetsByIndex[1] ?? doc.sheetsByIndex[0]) : doc.sheetsByIndex[0];
 
   await sheet.addRow({
     timestamp: lead.createdAt,
