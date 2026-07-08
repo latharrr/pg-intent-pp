@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import { StoreHydrationGate } from "@/lib/providers/StoreHydrationGate";
 import { Toaster } from "@/components/ui/sonner";
+import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import "./globals.css";
 
 const inter = Inter({
@@ -41,6 +42,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <StoreHydrationGate>{children}</StoreHydrationGate>
         <Toaster position="bottom-center" />
+        <AnalyticsTracker />
       </body>
     </html>
   );

@@ -3,6 +3,19 @@ import { GoogleSpreadsheet } from "google-spreadsheet";
 import type { PG } from "@/types";
 import type { Lead } from "@/types/lead";
 
+export interface AnalyticsEventRow {
+  timestamp: string;
+  sessionId: string;
+  deviceId: string;
+  ip: string;
+  event: string;
+  page: string;
+  payload: string;
+  userAgent: string;
+  referrer: string;
+  [key: string]: string;
+}
+
 const GOOGLE_SERVICE_ACCOUNT_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ?? "";
 const GOOGLE_PRIVATE_KEY = (process.env.GOOGLE_PRIVATE_KEY ?? "").replace(/\\n/g, "\n");
 const PG_SHEET_ID = process.env.GOOGLE_PG_SHEET_ID ?? "";
@@ -112,4 +125,24 @@ export async function appendLeadToSheet(lead: Lead & { bestAreaName?: string | n
     bestAreaName: lead.bestAreaName ?? "",
     leadScore: lead.leadScore ?? "",
   });
+}
+
+/**
+ * Appends a batch of analytics events to the Analytics tab (third tab, index 2)
+ * of the same spreadsheet as the PG inventory. Always uses PG_SHEET_ID's
+ * spreadsheet since analytics isn't a separately-configured destination.
+ *
+ * Expected sheet columns (header row):
+ * timestamp | sessionId | deviceId | ip | event | page | payload | userAgent | referrer
+ */
+export async function appendAnalyticsEvents(rows: AnalyticsEventRow[]): Promise<void> {
+  if (!PG_SHEET_ID || !GOOGLE_SERVICE_ACCOUNT_EMAIL || !GOOGLE_PRIVATE_KEY || rows.length === 0) {
+    throw new Error("Google Sheets analytics config missing");
+  }
+
+  const doc = new GoogleSpreadsheet(PG_SHEET_ID, getAuth());
+  await doc.loadInfo();
+  const sheet = doc.sheetsByIndex[2] ?? doc.sheetsByIndex[0];
+
+  await sheet.addRows(rows);
 }

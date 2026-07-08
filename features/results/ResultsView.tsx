@@ -118,6 +118,9 @@ export function ResultsView({ pgs }: ResultsViewProps) {
       }),
     });
 
+    sessionStorage.setItem("pica_completed", "1");
+    track("lead_submitted", { leadScore, budgetBand: profile.budgetBand, roomType: profile.roomType });
+
     setShowSuccess(true);
   }
 
