@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { formatRupees } from "@/utils/format";
 import { openAppLink } from "@/lib/appLinks";
 import { track } from "@/lib/analytics";
+import { Doodle } from "@/components/Doodle";
 import type { PG } from "@/types";
 import { ROOM_TYPE_LABELS } from "@/types/enums";
 
@@ -27,9 +28,10 @@ export function PGCard({ pg, nearestCollegeName = "Hindu College", onVirtualVisi
           {pg.roomTypes.map((type) => ROOM_TYPE_LABELS[type]).join(", ")}
         </p>
 
-        <p className="text-[14px] text-muted-foreground">
-          📍 {pg.distanceToCollegeMin} min walk from {nearestCollegeName}
-        </p>
+        <div className="flex items-center gap-1.5 text-[14px] text-muted-foreground">
+          <Doodle name="walk" className="size-4 shrink-0" />
+          {pg.distanceToCollegeMin} min walk from {nearestCollegeName}
+        </div>
       </div>
 
       <div className="flex items-center gap-3">
