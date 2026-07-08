@@ -9,8 +9,8 @@ export interface OptionCardProps {
   size?: "default" | "tile";
 }
 
-/** A single tappable choice box - the wireframe's full-bleed choice card
- * (1h) and, at size="tile", the larger side-by-side binary tile (1j). */
+/** A single tappable choice box - full-width card with subtle border,
+ * coral selected state, and a 0.98x tap feedback. */
 export function OptionCard({ label, description, selected, onSelect, size = "default" }: OptionCardProps) {
   return (
     <motion.button
@@ -19,15 +19,18 @@ export function OptionCard({ label, description, selected, onSelect, size = "def
       aria-checked={selected}
       onClick={onSelect}
       whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.1 }}
       className={cn(
-        "flex flex-col gap-1 rounded-lg border-2 px-4 py-3 text-left transition-colors",
+        "flex min-h-16 flex-col justify-center rounded-xl border px-4 py-3 text-left transition-colors",
         size === "tile" && "flex-1 items-center justify-center py-6 text-center",
-        selected ? "border-selected bg-selected/5" : "border-ink/15 bg-card hover:border-ink/40",
+        selected
+          ? "border-selected bg-[#FFF5F5]"
+          : "border-[#E5E5E5] bg-white hover:border-ink/40",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-selected focus-visible:ring-offset-2 focus-visible:ring-offset-background",
       )}
     >
-      <span className={cn("text-[15px] font-semibold", selected ? "text-selected" : "text-ink")}>{label}</span>
-      {description && <span className="text-[12px] text-muted-foreground">{description}</span>}
+      <span className={cn("text-[16px] font-medium text-ink")}>{label}</span>
+      {description && <span className="text-[13px] text-muted-foreground">{description}</span>}
     </motion.button>
   );
 }

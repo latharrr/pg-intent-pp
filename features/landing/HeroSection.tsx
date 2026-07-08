@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Button } from "@/components/Button";
 import { ROUTES } from "@/constants/routes";
 import { track } from "@/lib/analytics";
-import { ChevronRight, ChevronLeft } from "lucide-react";
 
 const LINES = [
   "You're coming to North Campus for the first time.",
@@ -18,140 +17,75 @@ const LINES = [
   "No promises. Just an honest attempt.",
 ];
 
-const AUTO_ROTATE_MS = 4400;
-const SLIDE_DISTANCE = 60;
+const PULSE_DURATION = 0.4;
+const STAGGER_DELAY = 0.25;
+const CTA_DELAY_AFTER_LAST_LINE = 0.5;
+const CTA_DELAY = (LINES.length - 1) * STAGGER_DELAY + CTA_DELAY_AFTER_LAST_LINE;
 
 export function HeroSection() {
   const router = useRouter();
-  const [step, setStep] = useState(0);
-  const [direction, setDirection] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const isLast = step === LINES.length - 1;
+  const [skipped, setSkipped] = useState(false);
 
   const start = useCallback(() => {
     track("continue_click", { from: "hero" });
     router.push(ROUTES.plan);
   }, [router]);
 
-  const goTo = useCallback((nextStep: number, moveDirection: number) => {
-    if (nextStep < 0 || nextStep >= LINES.length) {
-      if (nextStep >= LINES.length) start();
-      return;
+  const handleSkip = useCallback(() => {
+    if (!skipped) {
+      track("hero_animation_skipped");
+      setSkipped(true);
     }
-    setDirection(moveDirection);
-    setStep(nextStep);
-  }, [start]);
-
-  const next = useCallback(() => {
-    if (isLast) {
-      start();
-      return;
-    }
-    goTo(step + 1, 1);
-  }, [isLast, start, step, goTo]);
-
-  const prev = useCallback(() => {
-    goTo(step - 1, -1);
-  }, [step, goTo]);
-
-  useEffect(() => {
-    if (isPaused || isLast) return;
-    const id = setInterval(next, AUTO_ROTATE_MS);
-    return () => clearInterval(id);
-  }, [isPaused, isLast, next]);
-
-  const slideVariants = {
-    enter: (dir: number) => ({
-      x: dir > 0 ? SLIDE_DISTANCE : -SLIDE_DISTANCE,
-      opacity: 0,
-      scale: 0.96,
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-      scale: 1,
-    },
-    exit: (dir: number) => ({
-      x: dir > 0 ? -SLIDE_DISTANCE : SLIDE_DISTANCE,
-      opacity: 0,
-      scale: 0.96,
-    }),
-  };
+  }, [skipped]);
 
   return (
-    <section className="flex min-h-[calc(100svh-72px)] flex-col items-center justify-center gap-8 px-6 py-6">
-      <div
-        className="relative w-full max-w-sm flex-1"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-        onTouchStart={() => setIsPaused(true)}
-        onTouchEnd={() => setIsPaused(false)}
-      >
-        <div className="flex h-full items-center justify-center overflow-hidden">
-          <AnimatePresence mode="wait" custom={direction}>
+    <section
+      className="relative flex min-h-[calc(100svh-64px)] flex-col justify-center px-6 py-8"
+      onClick={handleSkip}
+      aria-label="Picapool PG Hunt Planner introduction"
+    >
+      <div className="mx-auto w-full max-w-[480px]">
+        <div className="flex flex-col gap-1">
+          {LINES.map((line, index) => (
             <motion.p
-              key={step}
-              custom={direction}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ type: "spring", stiffness: 320, damping: 28 }}
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.2}
-              onDragEnd={(_, info) => {
-                if (info.offset.x < -40) next();
-                else if (info.offset.x > 40) prev();
+              key={index}
+              initial={{ opacity: 0.08 }}
+              animate={{ opacity: 1 }}
+              transition={{
+                duration: skipped ? 0 : PULSE_DURATION,
+                delay: skipped ? 0 : index * STAGGER_DELAY,
+                ease: "easeOut",
               }}
-              className="cursor-grab text-center text-[21px] font-semibold leading-[1.45] text-ink active:cursor-grabbing"
+              className="text-[20px] font-medium leading-[1.6] text-ink md:text-[24px]"
             >
-              {LINES[step]}
+              {line}
             </motion.p>
-          </AnimatePresence>
+          ))}
         </div>
       </div>
 
-      <div className="flex w-full max-w-sm flex-col items-center gap-4">
-        <div className="flex items-center gap-4">
-          <motion.button
-            type="button"
-            whileTap={{ scale: 0.9 }}
-            onClick={prev}
-            disabled={step === 0}
-            aria-label="Previous"
-            className="flex size-11 items-center justify-center rounded-full border-[1.5px] border-ink/15 bg-card text-ink/70 shadow-sm transition-colors hover:border-ink/30 hover:text-ink disabled:opacity-30 disabled:hover:border-ink/15 disabled:hover:text-ink/70"
-          >
-            <ChevronLeft className="size-5" />
-          </motion.button>
-
-          <span className="min-w-[4.5rem] text-center text-[12px] font-medium text-muted-foreground">
-            {step + 1} / {LINES.length}
-          </span>
-
-          <motion.button
-            type="button"
-            whileTap={{ scale: 0.9 }}
-            onClick={next}
-            aria-label="Next"
-            className="flex size-11 items-center justify-center rounded-full border-[1.5px] border-ink/15 bg-card text-ink/70 shadow-sm transition-colors hover:border-ink/30 hover:text-ink"
-          >
-            <ChevronRight className="size-5" />
-          </motion.button>
-        </div>
-
-        <Button
-          onClick={(e) => {
-            e.stopPropagation();
-            start();
-          }}
-          className="w-full gap-1"
-        >
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: skipped ? 0 : 0.5,
+          delay: skipped ? 0 : CTA_DELAY,
+          ease: "easeOut",
+        }}
+        className="mx-auto mt-12 w-full max-w-[480px]"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <Button onClick={start} className="w-full rounded-xl">
           Plan My PG Hunt
-          <ChevronRight className="size-4" />
         </Button>
-        <p className="text-[11px] text-muted-foreground">Takes 30 seconds. No spam.</p>
-      </div>
+        <p className="mt-3 text-center text-[13px] text-muted-foreground">
+          Takes 30 seconds. No spam.
+        </p>
+      </motion.div>
+
+      <p className="sr-only">
+        Tap anywhere on the screen to skip the introduction animation.
+      </p>
     </section>
   );
 }

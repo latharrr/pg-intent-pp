@@ -54,16 +54,7 @@ export function useWizardStep() {
       router.push(ROUTES.home);
       return;
     }
-    let previousIndex = stepIndex - 1;
-    // Skip past a narrative bridge so Back always lands on a question,
-    // never on the (now-stale) confirmation beat that followed it.
-    if (WIZARD_STEPS[previousIndex].kind === "bridge") {
-      previousIndex -= 1;
-    }
-    if (previousIndex < 0) {
-      router.push(ROUTES.home);
-      return;
-    }
+    const previousIndex = stepIndex - 1;
     goToStep(WIZARD_STEPS[previousIndex].id);
   }
 

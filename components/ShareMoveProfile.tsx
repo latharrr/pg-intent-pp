@@ -3,27 +3,24 @@
 import { Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/Button";
+import { buildShareTextFromIds } from "@/utils/sharePlan";
 import type { UserProfile } from "@/types";
-import { BUDGET_BAND_LABELS, MOVE_TIMELINE_LABELS, ROOM_TYPE_LABELS } from "@/types/enums";
 
 export interface ShareMoveProfileProps {
   profile: UserProfile;
   bestAreaName?: string | null;
 }
 
-function buildSummaryText(profile: UserProfile, bestAreaName?: string | null): string {
-  const lines = ["My Picapool PG Hunt Plan"];
-  if (profile.budgetBand) lines.push(`Budget: ${BUDGET_BAND_LABELS[profile.budgetBand]}`);
-  if (profile.roomType) lines.push(`Room: ${ROOM_TYPE_LABELS[profile.roomType]}`);
-  if (bestAreaName) lines.push(`Area: ${bestAreaName}`);
-  if (profile.moveTimeline) lines.push(`Landing: ${MOVE_TIMELINE_LABELS[profile.moveTimeline]}`);
-  return lines.join("\n");
-}
-
-/** One-tap share for the "parent looking over shoulder" scenario. */
+/**
+ * One-tap share for the "parent looking over shoulder" scenario.
+ * Prefers the native share sheet, falls back to clipboard, and uses the
+ * WhatsApp message format from the UX spec.
+ */
 export function ShareMoveProfile({ profile, bestAreaName }: ShareMoveProfileProps) {
   async function handleShare() {
-    const text = buildSummaryText(profile, bestAreaName);
+    const topPgId = profile.shortlistedPgIds[0];
+    const text = buildShareTextFromIds(topPgId, profile.shortlistedPgIds, bestAreaName ?? "Hindu College");
+
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({ title: "My PG Hunt Plan", text });

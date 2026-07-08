@@ -3,10 +3,16 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Button } from "@/components/Button";
-import { Home, GraduationCap, TrainFront, Trees, Dumbbell, UtensilsCrossed, MessageCircle, ChevronLeft } from "lucide-react";
+import { Home, GraduationCap, TrainFront, Trees, Dumbbell, UtensilsCrossed, Smartphone, Apple, ChevronLeft } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { track } from "@/lib/analytics";
+import {
+  APP_STORE_URL,
+  PLAY_STORE_URL,
+  WHATSAPP_NUMBER,
+  getMobilePlatform,
+  getBestAppLink,
+} from "@/lib/appLinks";
 
 const LOCATIONS = [
   { icon: GraduationCap, label: "Hindu College", dist: "5 min walk", x: 15, y: 18 },
@@ -16,14 +22,14 @@ const LOCATIONS = [
   { icon: UtensilsCrossed, label: "Food Street", dist: "2 min walk", x: 50, y: 94 },
 ];
 
-const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_PICAPOOL_WHATSAPP_NUMBER;
-
 export default function PGDownloadPage() {
   const router = useRouter();
   const [phase, setPhase] = useState(0);
   const [showCta, setShowCta] = useState(false);
+  const [platform, setPlatform] = useState<"ios" | "android" | "unknown">("unknown");
 
   useEffect(() => {
+    setPlatform(getMobilePlatform());
     const timers = [
       setTimeout(() => setPhase(1), 80),
       setTimeout(() => setPhase(2), 400),
@@ -33,13 +39,18 @@ export default function PGDownloadPage() {
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  function handleCta() {
-    track("download_app_click", { from: "pg-download" });
+  const hasStoreLinks = Boolean(APP_STORE_URL || PLAY_STORE_URL);
+  const bestLink = getBestAppLink();
+
+  function handleMainCta() {
+    track("download_app_click", { from: "pg-download", platform });
+    if (bestLink) {
+      window.open(bestLink, "_blank", "noopener,noreferrer");
+      return;
+    }
     if (WHATSAPP_NUMBER) {
-      const text = encodeURIComponent("Hi Picapool! I want early access to the Picapool app for PG hunting near North Campus.");
+      const text = encodeURIComponent("Hi Picapool! I want to explore PGs near North Campus.");
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, "_blank", "noopener,noreferrer");
-    } else {
-      router.push(ROUTES.contact);
     }
   }
 
@@ -61,7 +72,7 @@ export default function PGDownloadPage() {
             Your PG. Everything near it.
           </h1>
           <p className="text-[14px] leading-relaxed text-muted-foreground">
-            Picapool helps you find a PG close to college, metro, food, and gym. One app. No broker runs.
+            100+ verified PGs near DU North Campus. Browse photos, take virtual visits, and shortlist rooms — all inside the Picapool app.
           </p>
         </div>
 
@@ -124,12 +135,48 @@ export default function PGDownloadPage() {
           transition={{ duration: 0.3 }}
           className="mt-6 flex flex-col items-center gap-3"
         >
-          <Button onClick={handleCta} className="w-full gap-2">
-            <MessageCircle className="size-4" />
-            Get Picapool App
-          </Button>
+          <button
+            type="button"
+            onClick={handleMainCta}
+            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-ink px-5 text-[15px] font-semibold text-white transition-colors hover:bg-ink/90"
+          >
+            {platform === "ios" && <Apple className="size-4" />}
+            {platform === "android" && <Smartphone className="size-4" />}
+            {platform === "unknown" && <Smartphone className="size-4" />}
+            {hasStoreLinks ? "Get Picapool App" : "Get Early Access on WhatsApp"}
+          </button>
+
+          {hasStoreLinks && (
+            <div className="flex w-full gap-3">
+              {APP_STORE_URL && (
+                <a
+                  href={APP_STORE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => track("download_app_click", { from: "pg-download", platform: "ios" })}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#E5E5E5] bg-white py-2.5 text-[13px] font-medium text-ink transition-colors hover:bg-muted"
+                >
+                  <Apple className="size-4" />
+                  App Store
+                </a>
+              )}
+              {PLAY_STORE_URL && (
+                <a
+                  href={PLAY_STORE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => track("download_app_click", { from: "pg-download", platform: "android" })}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#E5E5E5] bg-white py-2.5 text-[13px] font-medium text-ink transition-colors hover:bg-muted"
+                >
+                  <Smartphone className="size-4" />
+                  Play Store
+                </a>
+              )}
+            </div>
+          )}
+
           <p className="text-center text-[12px] text-muted-foreground">
-            Free. No spam. Get alerts when verified PGs near your college go live.
+            Free. No spam. Already used by 5,000+ DU students.
           </p>
           <button
             type="button"

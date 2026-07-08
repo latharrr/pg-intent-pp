@@ -1,0 +1,104 @@
+"use client";
+
+import { useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Bookmark, Share2, Play } from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { PG } from "@/types";
+
+export interface VirtualVisitModalProps {
+  pg: PG;
+  isOpen: boolean;
+  isShortlisted: boolean;
+  onClose: () => void;
+  onToggleShortlist: () => void;
+  onShare: () => void;
+}
+
+export function VirtualVisitModal({
+  pg,
+  isOpen,
+  isShortlisted,
+  onClose,
+  onToggleShortlist,
+  onShare,
+}: VirtualVisitModalProps) {
+  // Close on Escape key.
+  useEffect(() => {
+    if (!isOpen) return;
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+          className="fixed inset-0 z-50 flex flex-col bg-black"
+        >
+          {/* Top bar */}
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex flex-col">
+              <span className="text-[14px] font-semibold text-white">{pg.name}</span>
+              <span className="text-[12px] text-white/70">Picapool Virtual Visit</span>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close virtual visit"
+              className="flex size-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+            >
+              <X className="size-5" />
+            </button>
+          </div>
+
+          {/* Video area */}
+          <div className="relative flex flex-1 items-center justify-center bg-black">
+            <div className="flex aspect-[9/16] w-full max-w-md flex-col items-center justify-center bg-ink/80">
+              <div className="flex size-20 items-center justify-center rounded-full bg-white/10">
+                <Play className="size-8 fill-white text-white" />
+              </div>
+              <p className="mt-4 text-[14px] text-white/80">2-minute walkthrough video</p>
+              <p className="text-[12px] text-white/50">Video asset pending</p>
+            </div>
+          </div>
+
+          {/* Bottom actions */}
+          <div className="flex items-center gap-3 border-t border-white/10 bg-black px-4 py-4">
+            <button
+              type="button"
+              onClick={onToggleShortlist}
+              className={cn(
+                "flex h-12 flex-1 items-center justify-center gap-2 rounded-xl border transition-colors",
+                isShortlisted
+                  ? "border-selected bg-selected text-white"
+                  : "border-white/20 bg-white/5 text-white hover:bg-white/10",
+              )}
+            >
+              <Bookmark className={cn("size-4", isShortlisted && "fill-current")} />
+              <span className="text-[14px] font-medium">
+                {isShortlisted ? "Shortlisted" : "Shortlist"}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onShare}
+              className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 text-white transition-colors hover:bg-white/10"
+            >
+              <Share2 className="size-4" />
+              <span className="text-[14px] font-medium">Share</span>
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}

@@ -5,14 +5,18 @@ import { QuestionScreen } from "@/components/QuestionScreen";
 import { OptionCard } from "@/components/OptionCard";
 import { useAutoAdvance } from "@/utils/useAutoAdvance";
 import { BUDGET_BAND_LABELS, BUDGET_BAND_MICROCOPY, BUDGET_BANDS } from "@/types/enums";
+import { getBudgetConfirmation } from "../confirmationCopy";
 
 export function BudgetQuestionScreen({ onAdvance }: { onAdvance: () => void }) {
   const budgetBand = useJourneyStore((state) => state.profile.budgetBand);
   const updateProfile = useJourneyStore((state) => state.updateProfile);
-  const triggerAdvance = useAutoAdvance(onAdvance, 900);
+  const triggerAdvance = useAutoAdvance(onAdvance);
 
   return (
-    <QuestionScreen title="What feels comfortable per month?" doodle="wallet">
+    <QuestionScreen
+      title="What feels comfortable per month?"
+      unlockText={budgetBand ? getBudgetConfirmation(budgetBand) : null}
+    >
       <div role="radiogroup" aria-label="Monthly budget comfort" className="flex flex-col gap-3">
         {BUDGET_BANDS.map((band) => (
           <OptionCard

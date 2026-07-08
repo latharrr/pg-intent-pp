@@ -10,15 +10,17 @@ export interface RoadmapProps {
 }
 
 /**
- * A simple 3-dot roadmap progress indicator.
- * Filled dots = completed, pulsing dot = current.
+ * 3-dot roadmap fixed at the top of the question flow.
+ * Filled dots = completed, pulsing dot = current, empty dots = upcoming.
  */
 export function Roadmap({ currentIndex, total = 3, className }: RoadmapProps) {
   return (
-    <div className={cn("flex flex-col items-center gap-2", className)}>
-      <p className="text-[12px] font-medium text-ink">Plan Your PG Hunt</p>
+    <div className={cn("flex flex-col items-center gap-1.5", className)}>
+      <p className="text-[13px] font-medium uppercase tracking-[0.5px] text-[#888888]">
+        Plan Your PG Hunt
+      </p>
       <div
-        className="flex items-center gap-3"
+        className="flex items-center gap-2"
         role="progressbar"
         aria-valuenow={currentIndex}
         aria-valuemin={1}
@@ -28,24 +30,30 @@ export function Roadmap({ currentIndex, total = 3, className }: RoadmapProps) {
         {Array.from({ length: total }).map((_, index) => {
           const completed = index < currentIndex - 1;
           const active = index === currentIndex - 1;
+          const isLast = index === total - 1;
+
           return (
-            <motion.div
-              key={index}
-              initial={false}
-              animate={{
-                scale: active ? 1.15 : 1,
-                backgroundColor: completed || active ? "var(--color-selected)" : "var(--color-filler)",
-              }}
-              transition={{ type: "spring", stiffness: 250, damping: 18 }}
-              className={cn(
-                "size-2.5 rounded-full",
-                completed || active ? "bg-selected" : "bg-filler",
-                active && "motion-safe-pulse"
+            <div key={index} className="flex items-center gap-2">
+              <motion.span
+                initial={false}
+                animate={{
+                  scale: active ? [1, 1.3, 1] : 1,
+                }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className={cn(
+                  "text-[12px] leading-none",
+                  completed || active ? "text-selected" : "text-[#cccccc]",
+                )}
+                aria-current={active ? "step" : undefined}
+              >
+                {completed || active ? "●" : "○"}
+              </motion.span>
+              {!isLast && (
+                <span className="text-[10px] leading-none text-[#cccccc]">───</span>
               )}
-            />
+            </div>
           );
         })}
-        <span className="text-[12px] text-muted-foreground">Result</span>
       </div>
     </div>
   );

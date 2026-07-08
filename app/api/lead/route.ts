@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { appendLeadToSheet, getSheetConfig } from "@/lib/googleSheets";
 import type { Lead } from "@/types/lead";
 
 const leadSchema = z.object({
@@ -14,29 +15,23 @@ const leadSchema = z.object({
   roomType: z.string().nullable(),
 });
 
-// Mock persistence - an in-memory array standing in for a real table until
-// Supabase is wired in. Data doesn't survive a server restart; that's fine
-// for now, the point is exercising a real request/response contract.
+// Mock persistence retained as a safety net when Sheets isn't configured.
 const leads: Lead[] = [];
 
-/** Appends the lead as a row to the configured Google Sheet via an Apps
- * Script Web App (doPost). Silently skipped when the env var isn't set, so
- * local dev works with zero Sheets setup. Never blocks/breaks the request
- * on failure - losing an analytics-adjacent side effect shouldn't fail the
- * user's actual submission. */
-async function appendToGoogleSheet(lead: Lead): Promise<void> {
-  const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
-  if (!webhookUrl) return;
-
-  try {
-    await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(lead),
-    });
-  } catch (error) {
-    console.error("Failed to append lead to Google Sheet", error);
+/** Appends the lead to the configured Google Sheet. Falls back to in-memory
+ * storage when credentials are missing so local dev never breaks. */
+async function persistLead(lead: Lead & { bestAreaName?: string | null }): Promise<void> {
+  const config = getSheetConfig();
+  if (config.hasCredentials && config.hasLeadSheet) {
+    try {
+      await appendLeadToSheet(lead);
+      return;
+    } catch (error) {
+      console.error("Failed to append lead to Google Sheet", error);
+      // Fall through to in-memory storage so the user still sees success.
+    }
   }
+  leads.push(lead);
 }
 
 export async function POST(request: Request) {
@@ -47,8 +42,7 @@ export async function POST(request: Request) {
   }
 
   const lead: Lead = { ...parsed.data, createdAt: new Date().toISOString() };
-  leads.push(lead);
-  await appendToGoogleSheet(lead);
+  await persistLead(lead);
 
   return NextResponse.json({ ok: true, lead });
 }

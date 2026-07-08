@@ -17,9 +17,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Picapool Move Planner - Plan your move to North Campus",
+  title: "Picapool PG Hunt Planner",
   description:
-    "A calmer way to plan your PG search before you ever set foot in Delhi. Built by DU students, for DU students.",
+    "Plan your PG hunt before you land in Delhi. Curated, verified PGs near DU North Campus.",
 };
 
 export const viewport: Viewport = {
