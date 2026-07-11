@@ -22,6 +22,7 @@ interface JourneyStoreState {
   goToStep: (stepId: StepId) => void;
   setRecommendedArea: (areaId: string | null) => void;
   toggleShortlist: (pgId: string) => void;
+  setReferralSource: (source: string) => void;
 }
 
 export const useJourneyStore = create<JourneyStoreState>()(
@@ -57,6 +58,9 @@ export const useJourneyStore = create<JourneyStoreState>()(
 
       setRecommendedArea: (areaId) =>
         set((state) => ({ journey: { ...state.journey, recommendedAreaId: areaId } })),
+
+      setReferralSource: (source) =>
+        set((state) => ({ profile: { ...state.profile, referralSource: source } })),
 
       toggleShortlist: (pgId) =>
         set((state) => {

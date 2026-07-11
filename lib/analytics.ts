@@ -8,6 +8,8 @@
  * traffic and spam the sheet unreadably.
  */
 
+import { JOURNEY_STORE_KEY } from "./store/storeKeys";
+
 interface QueuedEvent {
   ts: string;
   event: string;
@@ -42,6 +44,20 @@ export function getDeviceId(): string {
   return getId(localStorage, "pica_did");
 }
 
+/** Reads the persisted journey store directly (rather than the useJourneyStore
+ * hook) so plain track() calls outside React can still tag events with it. */
+function getReferralSource(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(JOURNEY_STORE_KEY);
+    if (!raw) return null;
+    const referralSource = JSON.parse(raw)?.state?.profile?.referralSource;
+    return typeof referralSource === "string" ? referralSource : null;
+  } catch {
+    return null;
+  }
+}
+
 function flush(useBeacon = false) {
   if (typeof window === "undefined" || queue.length === 0) return;
   const events = queue;
@@ -74,7 +90,9 @@ export function track(event: string, payload?: Record<string, unknown>): void {
   }
   if (typeof window === "undefined") return;
 
-  queue.push({ ts: new Date().toISOString(), event, page: window.location.pathname, payload });
+  const referralSource = getReferralSource();
+  const finalPayload = referralSource ? { referralSource, ...payload } : payload;
+  queue.push({ ts: new Date().toISOString(), event, page: window.location.pathname, payload: finalPayload });
   if (queue.length >= 10) flush();
   else scheduleFlush();
 }

@@ -15,6 +15,9 @@ export interface UserProfile {
   email: string | null;
   leadScore: LeadScore | null;
   whatsappOptIn: boolean;
+  /** Attribution code from a personalized link, e.g. pg.picapool.tech/{code} - lets
+   * a single WhatsApp template or influencer bio link be traced back to its source. */
+  referralSource: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -32,6 +35,7 @@ export function createEmptyUserProfile(sessionId: string): UserProfile {
     email: null,
     leadScore: null,
     whatsappOptIn: false,
+    referralSource: null,
     createdAt: now,
     updatedAt: now,
   };

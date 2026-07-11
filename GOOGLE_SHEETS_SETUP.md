@@ -78,10 +78,12 @@ green-view-pg | Green View PG | hudson-lane | 16000 | shared_2 | non_veg_ok | TR
 
 Create a second Google Sheet and add this header row:
 
-| timestamp | name | phone | email | whatsappOptIn | budgetBand | roomType | moveTimeline | bestAreaName | leadScore |
-|---|---|---|---|---|---|---|---|---|---|
+| timestamp | name | phone | email | whatsappOptIn | budgetBand | roomType | moveTimeline | bestAreaName | leadScore | referralSource |
+|---|---|---|---|---|---|---|---|---|---|---|
 
 The app will append one row per saved plan.
+
+`referralSource` is the code from a personalized link (e.g. `pg.picapool.tech/insta_ritika` → `insta_ritika`, or the WhatsApp template's `{{1}}` button param). If you already have this sheet from before, just add the `referralSource` column header - existing rows are unaffected.
 
 ---
 
@@ -117,6 +119,29 @@ source: static   # using static mock data (env vars not set)
 2. Import repo in Vercel.
 3. Add all env vars from `.env.example` in Project Settings → Environment Variables.
 4. Deploy.
+
+---
+
+## 8. Referral links + stats (`/admin`)
+
+`/admin` (password-gated, see `ADMIN_PASSWORD` in `.env.example`) generates personalized links like
+`pg.picapool.tech/insta_ritika` for influencers/campaigns and reports on them. It uses two more tabs
+in the **same spreadsheet as the PG inventory** (`GOOGLE_PG_SHEET_ID`) - both are auto-created the
+first time you open `/admin` or generate a link, so you don't need to create them by hand:
+
+- **Referrals** - one row per generated link: `slug | label | link | createdAt`.
+- **ReferralStats** - recomputed (cleared and rewritten) every time you open `/admin` or click
+  "Refresh now": `referralSource | opens | completed | completionRate | avgTimeToCompleteSec | dropOffCount | topDropOffStep | downloadClicks | lastUpdated`.
+
+Stats are computed from the **Analytics** tab, so add one more column to it if you already created
+it before this feature existed:
+
+```
+timestampIso
+```
+
+(append it as the last header cell - it's a raw ISO timestamp used for precise duration math,
+alongside the existing human-readable `date`/`time` columns.)
 
 ---
 

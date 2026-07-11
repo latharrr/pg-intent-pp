@@ -54,6 +54,7 @@ export function ContactCaptureScreen() {
           bestAreaName,
           moveTimeline: profile.moveTimeline,
           roomType: profile.roomType,
+          referralSource: profile.referralSource ?? null,
         }),
       });
     } finally {

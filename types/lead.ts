@@ -12,5 +12,6 @@ export interface Lead {
   bestAreaName: string | null;
   moveTimeline: string | null;
   roomType: string | null;
+  referralSource: string | null;
   createdAt: string;
 }

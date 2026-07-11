@@ -97,7 +97,7 @@ export async function fetchPGsFromSheet(): Promise<PG[]> {
  * Appends a lead to the configured Google Sheet.
  *
  * Expected sheet columns (header row):
- * timestamp | name | phone | email | whatsappOptIn | budgetBand | roomType | moveTimeline | bestAreaName | leadScore
+ * timestamp | name | phone | email | whatsappOptIn | budgetBand | roomType | moveTimeline | bestAreaName | leadScore | referralSource
  *
  * When GOOGLE_LEAD_SHEET_ID and GOOGLE_PG_SHEET_ID point to the same spreadsheet
  * (one sheet, two tabs), leads go to the second tab (index 1) so they don't
@@ -124,10 +124,11 @@ export async function appendLeadToSheet(lead: Lead & { bestAreaName?: string | n
     moveTimeline: lead.moveTimeline ?? "",
     bestAreaName: lead.bestAreaName ?? "",
     leadScore: lead.leadScore ?? "",
+    referralSource: lead.referralSource ?? "",
   });
 }
 
-const ANALYTICS_COLUMN_COUNT = 10; // date, time, sessionId, deviceId, ip, event, page, payload, userAgent, referrer
+const ANALYTICS_COLUMN_COUNT = 11; // date, time, sessionId, deviceId, ip, event, page, payload, userAgent, referrer, timestampIso
 
 /** Light, readable-with-black-text palette. Cycles (repeats) once every session has been assigned one. */
 const SESSION_COLORS: { red: number; green: number; blue: number }[] = [
@@ -183,11 +184,15 @@ function formatDelhiTime(iso: string): string {
  * spreadsheet since analytics isn't a separately-configured destination.
  *
  * Expected sheet columns (header row):
- * date | time | sessionId | deviceId | ip | event | page | payload | userAgent | referrer
+ * date | time | sessionId | deviceId | ip | event | page | payload | userAgent | referrer | timestampIso
  *
  * Each row's date/time is converted from UTC to Asia/Kolkata, and the whole
  * row is background-colored by a hash of sessionId so events from the same
  * visit are visually grouped (colors repeat once every palette slot is used).
+ *
+ * `timestampIso` duplicates `date`/`time` as a raw sortable value - the referral
+ * stats job needs to diff timestamps precisely, which the locale-formatted
+ * date/time strings can't be parsed back into reliably.
  */
 export async function appendAnalyticsEvents(rows: AnalyticsEventRow[]): Promise<void> {
   if (!PG_SHEET_ID || !GOOGLE_SERVICE_ACCOUNT_EMAIL || !GOOGLE_PRIVATE_KEY || rows.length === 0) {
@@ -209,13 +214,14 @@ export async function appendAnalyticsEvents(rows: AnalyticsEventRow[]): Promise<
     payload: r.payload,
     userAgent: r.userAgent,
     referrer: r.referrer,
+    timestampIso: r.timestamp,
   }));
 
   const addedRows = await sheet.addRows(sheetRows);
 
   const firstRow = addedRows[0].rowNumber;
   const lastRow = addedRows[addedRows.length - 1].rowNumber;
-  await sheet.loadCells(`A${firstRow}:J${lastRow}`);
+  await sheet.loadCells(`A${firstRow}:K${lastRow}`);
 
   addedRows.forEach((addedRow, i) => {
     const color = colorForSession(rows[i].sessionId);
@@ -225,4 +231,234 @@ export async function appendAnalyticsEvents(rows: AnalyticsEventRow[]): Promise<
   });
 
   await sheet.saveUpdatedCells();
+}
+
+/**
+ * Returns the named tab, creating it with the given header row if it doesn't
+ * exist yet. Two overlapping requests can both miss the "already exists"
+ * check and both call addSheet - Google resolves that by silently renaming
+ * the second one (e.g. "ReferralStats_conflict123") rather than erroring, so
+ * this detects that and cleans up the accidental duplicate.
+ */
+async function getOrCreateSheet(doc: GoogleSpreadsheet, title: string, headerValues: string[]) {
+  const existing = doc.sheetsByTitle[title];
+  if (existing) return existing;
+
+  const created = await doc.addSheet({ title, headerValues });
+  if (created.title === title) return created;
+
+  await doc.loadInfo();
+  const original = doc.sheetsByTitle[title];
+  if (original) {
+    await doc.deleteSheet(created.sheetId);
+    return original;
+  }
+  return created;
+}
+
+export interface ReferralLink {
+  slug: string;
+  label: string;
+  link: string;
+  createdAt: string;
+}
+
+const REFERRALS_HEADER = ["slug", "label", "link", "createdAt"];
+
+/** Lists every admin-generated referral link, newest first. Auto-creates the
+ * "Referrals" tab on first use. */
+export async function getReferralLinks(): Promise<ReferralLink[]> {
+  if (!PG_SHEET_ID || !GOOGLE_SERVICE_ACCOUNT_EMAIL || !GOOGLE_PRIVATE_KEY) {
+    throw new Error("Google Sheets config missing");
+  }
+
+  const doc = new GoogleSpreadsheet(PG_SHEET_ID, getAuth());
+  await doc.loadInfo();
+  const sheet = await getOrCreateSheet(doc, "Referrals", REFERRALS_HEADER);
+  const rows = await sheet.getRows();
+
+  return rows
+    .map((row) => ({
+      slug: String(row.get("slug") ?? ""),
+      label: String(row.get("label") ?? ""),
+      link: String(row.get("link") ?? ""),
+      createdAt: String(row.get("createdAt") ?? ""),
+    }))
+    .filter((r) => r.slug)
+    .reverse();
+}
+
+/** Appends a new referral link row. Throws if the slug is already taken. */
+export async function appendReferralLink(link: Omit<ReferralLink, "createdAt">): Promise<ReferralLink> {
+  if (!PG_SHEET_ID || !GOOGLE_SERVICE_ACCOUNT_EMAIL || !GOOGLE_PRIVATE_KEY) {
+    throw new Error("Google Sheets config missing");
+  }
+
+  const doc = new GoogleSpreadsheet(PG_SHEET_ID, getAuth());
+  await doc.loadInfo();
+  const sheet = await getOrCreateSheet(doc, "Referrals", REFERRALS_HEADER);
+  const rows = await sheet.getRows();
+  if (rows.some((row) => row.get("slug") === link.slug)) {
+    throw new Error(`Slug "${link.slug}" is already in use`);
+  }
+
+  const createdAt = new Date().toISOString();
+  await sheet.addRow({ slug: link.slug, label: link.label, link: link.link, createdAt });
+  return { ...link, createdAt };
+}
+
+export interface ReferralStatRow {
+  referralSource: string;
+  opens: number;
+  completed: number;
+  completionRate: string;
+  avgTimeToCompleteSec: number | "";
+  dropOffCount: number;
+  topDropOffStep: string;
+  downloadClicks: number;
+  lastUpdated: string;
+}
+
+const REFERRAL_STATS_HEADER = [
+  "referralSource",
+  "opens",
+  "completed",
+  "completionRate",
+  "avgTimeToCompleteSec",
+  "dropOffCount",
+  "topDropOffStep",
+  "downloadClicks",
+  "lastUpdated",
+];
+
+interface SessionAgg {
+  referralSource: string;
+  firstTs: number;
+  completedTs: number | null;
+  lastStep: string | null;
+  downloadClicked: boolean;
+}
+
+/**
+ * Recomputes per-referral-source funnel stats from the raw Analytics tab rows
+ * and overwrites the ReferralStats tab (auto-created on first use).
+ *
+ * Per session (grouped by sessionId): the referralSource is whatever any of
+ * its events carried (set once the [ref] landing page runs, so it sticks to
+ * every later event in that session); "completed" comes from a lead_submitted
+ * event; drop-off step comes from session_end's lastStep (falling back to the
+ * last step_viewed seen) for sessions that never completed; download clicks
+ * from any download_app_click event; completion time is
+ * (lead_submitted timestamp - the session's earliest event timestamp).
+ */
+export async function refreshReferralStats(): Promise<ReferralStatRow[]> {
+  if (!PG_SHEET_ID || !GOOGLE_SERVICE_ACCOUNT_EMAIL || !GOOGLE_PRIVATE_KEY) {
+    throw new Error("Google Sheets config missing");
+  }
+
+  const doc = new GoogleSpreadsheet(PG_SHEET_ID, getAuth());
+  await doc.loadInfo();
+  const analyticsSheet = doc.sheetsByTitle.Analytics ?? doc.sheetsByIndex[2] ?? doc.sheetsByIndex[0];
+  const rows = await analyticsSheet.getRows({ limit: 50000 });
+
+  const sessions = new Map<string, SessionAgg>();
+
+  for (const row of rows) {
+    const sessionId = String(row.get("sessionId") ?? "");
+    if (!sessionId) continue;
+
+    let payload: Record<string, unknown> = {};
+    try {
+      payload = JSON.parse(String(row.get("payload") ?? "")) || {};
+    } catch {
+      // malformed/empty payload cell - treat as no payload
+    }
+
+    const event = String(row.get("event") ?? "");
+    const tsRaw = String(row.get("timestampIso") ?? "");
+    const ts = tsRaw ? new Date(tsRaw).getTime() : NaN;
+
+    let session = sessions.get(sessionId);
+    if (!session) {
+      session = { referralSource: "", firstTs: Infinity, completedTs: null, lastStep: null, downloadClicked: false };
+      sessions.set(sessionId, session);
+    }
+
+    const referralSource = typeof payload.referralSource === "string" ? payload.referralSource : "";
+    if (referralSource) session.referralSource = referralSource;
+    if (Number.isFinite(ts) && ts < session.firstTs) session.firstTs = ts;
+
+    if (event === "lead_submitted" && Number.isFinite(ts)) {
+      if (session.completedTs === null || ts < session.completedTs) session.completedTs = ts;
+    }
+    if (event === "download_app_click") session.downloadClicked = true;
+
+    if (event === "session_end" && typeof payload.lastStep === "string") {
+      session.lastStep = payload.lastStep;
+    } else if (event === "step_viewed" && typeof payload.stepId === "string") {
+      session.lastStep = payload.stepId;
+    }
+  }
+
+  interface Bucket {
+    opens: number;
+    completed: number;
+    downloadClicks: number;
+    completionDurationsSec: number[];
+    dropOffSteps: Record<string, number>;
+  }
+  const buckets = new Map<string, Bucket>();
+
+  for (const session of sessions.values()) {
+    if (!session.referralSource) continue;
+    let bucket = buckets.get(session.referralSource);
+    if (!bucket) {
+      bucket = { opens: 0, completed: 0, downloadClicks: 0, completionDurationsSec: [], dropOffSteps: {} };
+      buckets.set(session.referralSource, bucket);
+    }
+
+    bucket.opens += 1;
+    if (session.downloadClicked) bucket.downloadClicks += 1;
+
+    if (session.completedTs !== null) {
+      bucket.completed += 1;
+      if (Number.isFinite(session.firstTs)) {
+        bucket.completionDurationsSec.push((session.completedTs - session.firstTs) / 1000);
+      }
+    } else if (session.lastStep) {
+      bucket.dropOffSteps[session.lastStep] = (bucket.dropOffSteps[session.lastStep] ?? 0) + 1;
+    }
+  }
+
+  const lastUpdated = new Date().toISOString();
+  const statRows: ReferralStatRow[] = Array.from(buckets.entries())
+    .map(([referralSource, bucket]) => {
+      const topDropOffStep = Object.entries(bucket.dropOffSteps).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "";
+      const avgTimeToCompleteSec: number | "" = bucket.completionDurationsSec.length
+        ? Math.round(
+            bucket.completionDurationsSec.reduce((sum, d) => sum + d, 0) / bucket.completionDurationsSec.length,
+          )
+        : "";
+
+      return {
+        referralSource,
+        opens: bucket.opens,
+        completed: bucket.completed,
+        completionRate: bucket.opens ? `${Math.round((bucket.completed / bucket.opens) * 100)}%` : "0%",
+        avgTimeToCompleteSec,
+        dropOffCount: bucket.opens - bucket.completed,
+        topDropOffStep,
+        downloadClicks: bucket.downloadClicks,
+        lastUpdated,
+      };
+    })
+    .sort((a, b) => b.opens - a.opens);
+
+  const statsSheet = await getOrCreateSheet(doc, "ReferralStats", REFERRAL_STATS_HEADER);
+  await statsSheet.clearRows();
+  if (statRows.length > 0) {
+    await statsSheet.addRows(statRows.map((r) => ({ ...r })));
+  }
+
+  return statRows;
 }

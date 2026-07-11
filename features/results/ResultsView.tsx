@@ -111,6 +111,7 @@ export function ResultsView({ pgs }: ResultsViewProps) {
         bestAreaName: recommendedAreaName,
         moveTimeline: profile.moveTimeline,
         roomType: profile.roomType,
+        referralSource: profile.referralSource ?? null,
       }),
     });
 

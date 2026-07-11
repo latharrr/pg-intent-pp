@@ -13,6 +13,9 @@ const leadSchema = z.object({
   bestAreaName: z.string().nullable(),
   moveTimeline: z.string().nullable(),
   roomType: z.string().nullable(),
+  // Optional: older persisted profiles (from before referral tracking existed)
+  // won't send this key at all.
+  referralSource: z.string().nullable().optional(),
 });
 
 // Mock persistence retained as a safety net when Sheets isn't configured.
@@ -41,7 +44,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const lead: Lead = { ...parsed.data, createdAt: new Date().toISOString() };
+  const lead: Lead = {
+    ...parsed.data,
+    referralSource: parsed.data.referralSource ?? null,
+    createdAt: new Date().toISOString(),
+  };
   await persistLead(lead);
 
   return NextResponse.json({ ok: true, lead });
