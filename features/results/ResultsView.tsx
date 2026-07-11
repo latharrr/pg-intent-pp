@@ -128,6 +128,7 @@ export function ResultsView({ pgs }: ResultsViewProps) {
   async function handleVirtualVisitPhone(phone: string) {
     const leadScore = await submitLead(phone);
     track("lead_submitted", { leadScore, budgetBand: profile.budgetBand, roomType: profile.roomType, source: "virtual_visit" });
+    router.push(ROUTES.pgDownload);
   }
 
   const hasPhone = Boolean(profile.phone);
