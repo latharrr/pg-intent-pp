@@ -171,6 +171,10 @@ export function ResultsView({ pgs }: ResultsViewProps) {
                   nearestCollegeName={recommendedAreaName ?? "Hindu College"}
                   onVirtualVisit={() => {
                     track("virtual_visit_click", { pgId: pg.id });
+                    if (hasPhone) {
+                      router.push(ROUTES.pgDownload);
+                      return;
+                    }
                     setVisitPg(pg);
                   }}
                   onShare={() => handleShare(pg.id)}
