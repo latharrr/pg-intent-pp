@@ -15,11 +15,11 @@ import {
 } from "@/lib/appLinks";
 
 const LOCATIONS = [
-  { icon: GraduationCap, label: "Hindu College", dist: "5 min walk", x: 15, y: 18 },
-  { icon: TrainFront, label: "Metro", dist: "3 min walk", x: 85, y: 18 },
-  { icon: Trees, label: "Park", dist: "4 min walk", x: 85, y: 82 },
-  { icon: Dumbbell, label: "Gym", dist: "6 min walk", x: 15, y: 82 },
-  { icon: UtensilsCrossed, label: "Food Street", dist: "2 min walk", x: 50, y: 94 },
+  { icon: GraduationCap, label: "Hindu College", dist: "5 min walk", x: 25, y: 20 },
+  { icon: TrainFront, label: "Metro", dist: "3 min walk", x: 75, y: 20 },
+  { icon: Trees, label: "Park", dist: "4 min walk", x: 75, y: 78 },
+  { icon: Dumbbell, label: "Gym", dist: "6 min walk", x: 25, y: 78 },
+  { icon: UtensilsCrossed, label: "Food Street", dist: "2 min walk", x: 50, y: 90 },
 ];
 
 export default function PGDownloadPage() {
@@ -119,7 +119,7 @@ export default function PGDownloadPage() {
                 animate={{ opacity: phase >= 3 ? 1 : 0, scale: phase >= 3 ? 1 : 0.8 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
                 style={{ left: `${loc.x}%`, top: `${loc.y}%`, transform: "translate(-50%, -50%)" }}
-                className="absolute z-10 flex min-w-[92px] flex-col items-center gap-1 rounded-xl border-[1.5px] border-ink/10 bg-white px-3 py-2 shadow-sm"
+                className="absolute z-10 flex w-24 flex-col items-center gap-1 rounded-xl border-[1.5px] border-ink/10 bg-white px-2 py-2 shadow-sm"
               >
                 <Icon className="size-4 text-ink" />
                 <span className="text-[11px] font-semibold text-ink">{loc.label}</span>
