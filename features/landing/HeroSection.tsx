@@ -115,7 +115,7 @@ export function HeroSection() {
   }
 
   return (
-    <div className="relative flex min-h-[calc(100svh-64px)] flex-col overflow-hidden bg-gradient-to-b from-white via-[#FDF7F0] to-[#F6D6C4]">
+    <div className="relative flex h-[calc(100dvh-64px)] flex-col overflow-hidden bg-gradient-to-b from-white via-[#FDF7F0] to-[#F6D6C4]">
       <button
         type="button"
         onClick={() => goTo(activeIndex - 1)}
@@ -130,7 +130,7 @@ export function HeroSection() {
 
       <div
         ref={scrollRef}
-        className="flex flex-1 snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-4 pt-20 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex min-h-0 flex-1 snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-4 pt-20 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {CARDS.map((card, index) => (
           <div
@@ -138,7 +138,7 @@ export function HeroSection() {
             ref={(el) => {
               cardRefs.current[index] = el;
             }}
-            className="flex w-[85%] shrink-0 snap-start flex-col gap-3"
+            className="flex w-[85%] min-h-0 shrink-0 snap-start flex-col gap-3"
           >
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -162,7 +162,7 @@ export function HeroSection() {
 
             <div
               className={cn(
-                "relative flex aspect-[4/5] items-center justify-center overflow-hidden rounded-3xl",
+                "relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-3xl",
                 card.illustrationClassName,
               )}
             >

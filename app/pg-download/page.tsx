@@ -55,28 +55,28 @@ export default function PGDownloadPage() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col items-center bg-background px-6 py-6">
-      <div className="w-full max-w-sm flex-1">
+    <div className="flex h-dvh flex-col items-center overflow-hidden bg-background px-6 py-6 [@media(max-height:420px)]:py-3">
+      <div className="flex w-full max-w-sm flex-1 min-h-0 flex-col overflow-y-auto overscroll-contain">
         <button
           type="button"
           onClick={() => router.push(ROUTES.results)}
           aria-label="Back to results"
-          className="inline-flex items-center gap-1 text-[13px] text-ink/60 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-selected"
+          className="inline-flex shrink-0 items-center gap-1 text-[13px] text-ink/60 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-selected"
         >
           <ChevronLeft className="size-4" />
           Back
         </button>
 
-        <div className="mt-5 flex flex-col gap-2">
+        <div className="mt-5 flex shrink-0 flex-col gap-2 [@media(max-height:420px)]:mt-2">
           <h1 className="text-[26px] font-semibold leading-tight text-ink">
             Your PG. Everything near it.
           </h1>
-          <p className="text-[14px] leading-relaxed text-muted-foreground">
+          <p className="text-[14px] leading-relaxed text-muted-foreground [@media(max-height:420px)]:hidden">
             100+ verified PGs near DU North Campus. Browse photos, take virtual visits, and shortlist rooms — all inside the Picapool app.
           </p>
         </div>
 
-        <div className="relative mt-8 h-[320px] w-full sm:h-[360px]">
+        <div className="relative mt-8 min-h-[110px] w-full flex-1 shrink [@media(max-height:420px)]:mt-3 [@media(max-height:420px)]:min-h-[80px]">
           <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
             {LOCATIONS.map((loc, index) => (
               <motion.line
@@ -133,7 +133,7 @@ export default function PGDownloadPage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: showCta ? 1 : 0, y: showCta ? 0 : 12 }}
           transition={{ duration: 0.3 }}
-          className="mt-6 flex flex-col items-center gap-3"
+          className="mt-6 flex shrink-0 flex-col items-center gap-3 [@media(max-height:420px)]:mt-3 [@media(max-height:420px)]:gap-1.5"
         >
           <button
             type="button"
