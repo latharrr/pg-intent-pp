@@ -15,11 +15,11 @@ import {
 } from "@/lib/appLinks";
 
 const LOCATIONS = [
-  { icon: GraduationCap, label: "Hindu College", dist: "5 min walk", x: 25, y: 20 },
-  { icon: TrainFront, label: "Metro", dist: "3 min walk", x: 75, y: 20 },
-  { icon: Trees, label: "Park", dist: "4 min walk", x: 75, y: 78 },
-  { icon: Dumbbell, label: "Gym", dist: "6 min walk", x: 25, y: 78 },
-  { icon: UtensilsCrossed, label: "Food Street", dist: "2 min walk", x: 50, y: 90 },
+  { icon: GraduationCap, label: "Hindu College", dist: "5 min walk", x: 8, y: 6 },
+  { icon: TrainFront, label: "Metro", dist: "3 min walk", x: 92, y: 6 },
+  { icon: Trees, label: "Park", dist: "4 min walk", x: 92, y: 80 },
+  { icon: Dumbbell, label: "Gym", dist: "6 min walk", x: 8, y: 80 },
+  { icon: UtensilsCrossed, label: "Food Street", dist: "2 min walk", x: 50, y: 98 },
 ];
 
 export default function PGDownloadPage() {
@@ -118,7 +118,16 @@ export default function PGDownloadPage() {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: phase >= 3 ? 1 : 0, scale: phase >= 3 ? 1 : 0.8 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
-                style={{ left: `${loc.x}%`, top: `${loc.y}%`, transform: "translate(-50%, -50%)" }}
+                style={{
+                  left: `${loc.x}%`,
+                  top: `${loc.y}%`,
+                  // Shift by the pin's own position fraction: a pin at x=92%
+                  // moves 92% of its own width, so cards can never cross the
+                  // map edge regardless of viewport width. Must be the CSS
+                  // `translate` property, not `transform` — framer-motion owns
+                  // `transform` while animating scale and would clobber it.
+                  translate: `-${loc.x}% -${loc.y}%`,
+                }}
                 className="absolute z-10 flex w-24 flex-col items-center gap-1 rounded-xl border-[1.5px] border-ink/10 bg-white px-2 py-2 shadow-sm"
               >
                 <Icon className="size-4 text-ink" />
