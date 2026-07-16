@@ -78,10 +78,12 @@ green-view-pg | Green View PG | hudson-lane | 16000 | shared_2 | non_veg_ok | TR
 
 Create a second Google Sheet and add this header row:
 
-| timestamp | name | phone | email | whatsappOptIn | budgetBand | roomType | moveTimeline | bestAreaName | leadScore | referralSource |
-|---|---|---|---|---|---|---|---|---|---|---|
+| timestamp | name | phone | email | whatsappOptIn | campusZone | budgetBand | roomType | moveTimeline | bestAreaName | leadScore | referralSource |
+|---|---|---|---|---|---|---|---|---|---|---|---|
 
 The app will append one row per saved plan.
+
+`campusZone` is the student's answer to the first onboarding question - `north_campus`, `south_campus`, or `off_campus`. If you already have this sheet from before, just add the `campusZone` column header - existing rows are unaffected.
 
 `referralSource` is the code from a personalized link (e.g. `pg.picapool.tech/insta_ritika` → `insta_ritika`, or the WhatsApp template's `{{1}}` button param). If you already have this sheet from before, just add the `referralSource` column header - existing rows are unaffected.
 

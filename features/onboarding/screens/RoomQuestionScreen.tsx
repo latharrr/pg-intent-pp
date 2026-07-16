@@ -14,10 +14,10 @@ export function RoomQuestionScreen({ onAdvance }: { onAdvance: () => void }) {
 
   return (
     <QuestionScreen
-      title="Solo room or okay with sharing?"
+      title="What's your sharing preference?"
       unlockText={roomType ? getRoomConfirmation(roomType) : null}
     >
-      <div role="radiogroup" aria-label="Room type" className="flex flex-col gap-3">
+      <div role="radiogroup" aria-label="Sharing preference" className="flex flex-col gap-3">
         {ROOM_TYPES.map((type) => (
           <OptionCard
             key={type}

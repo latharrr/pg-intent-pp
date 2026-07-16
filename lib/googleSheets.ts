@@ -97,7 +97,7 @@ export async function fetchPGsFromSheet(): Promise<PG[]> {
  * Appends a lead to the configured Google Sheet.
  *
  * Expected sheet columns (header row):
- * timestamp | name | phone | email | whatsappOptIn | budgetBand | roomType | moveTimeline | bestAreaName | leadScore | referralSource
+ * timestamp | name | phone | email | whatsappOptIn | campusZone | budgetBand | roomType | moveTimeline | bestAreaName | leadScore | referralSource
  *
  * When GOOGLE_LEAD_SHEET_ID and GOOGLE_PG_SHEET_ID point to the same spreadsheet
  * (one sheet, two tabs), leads go to the second tab (index 1) so they don't
@@ -119,6 +119,7 @@ export async function appendLeadToSheet(lead: Lead & { bestAreaName?: string | n
     phone: lead.phone ?? "",
     email: lead.email ?? "",
     whatsappOptIn: lead.whatsappOptIn ? "TRUE" : "FALSE",
+    campusZone: lead.campusZone ?? "",
     budgetBand: lead.budgetBand ?? "",
     roomType: lead.roomType ?? "",
     moveTimeline: lead.moveTimeline ?? "",

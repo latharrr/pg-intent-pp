@@ -1,11 +1,12 @@
-import type { BudgetBand, RoomType, MoveTimeline, LeadScore } from "./enums";
+import type { BudgetBand, RoomType, MoveTimeline, LeadScore, CampusZone } from "./enums";
 
 /**
  * The PG Hunt Planner profile - intentionally minimal per the UX blueprint.
- * Only the 3 answers (landing, budget, room) plus contact/shortlist state.
+ * Only the 4 answers (campus, landing, room, budget) plus contact/shortlist state.
  */
 export interface UserProfile {
   sessionId: string;
+  campusZone: CampusZone | null;
   budgetBand: BudgetBand | null;
   roomType: RoomType | null;
   moveTimeline: MoveTimeline | null;
@@ -26,6 +27,7 @@ export function createEmptyUserProfile(sessionId: string): UserProfile {
   const now = new Date().toISOString();
   return {
     sessionId,
+    campusZone: null,
     budgetBand: null,
     roomType: null,
     moveTimeline: null,

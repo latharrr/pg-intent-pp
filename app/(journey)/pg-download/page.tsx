@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Home, GraduationCap, TrainFront, Trees, Dumbbell, UtensilsCrossed, Smartphone, Apple, ChevronLeft } from "lucide-react";
+import { Home, GraduationCap, TrainFront, Trees, Dumbbell, UtensilsCrossed, Smartphone, Apple, ChevronLeft, Loader2 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { track } from "@/lib/analytics";
+import { useJourneyStore } from "@/lib/store/useJourneyStore";
 import {
   APP_STORE_URL,
   PLAY_STORE_URL,
@@ -24,19 +25,22 @@ const LOCATIONS = [
 
 export default function PGDownloadPage() {
   const router = useRouter();
+  const goToStep = useJourneyStore((state) => state.goToStep);
   const [phase, setPhase] = useState(0);
   const [showCta, setShowCta] = useState(false);
   const [platform, setPlatform] = useState<"ios" | "android" | "unknown">("unknown");
 
   useEffect(() => {
+    goToStep("pg-download");
     setPlatform(getMobilePlatform());
     const timers = [
-      setTimeout(() => setPhase(1), 80),
-      setTimeout(() => setPhase(2), 400),
-      setTimeout(() => setPhase(3), 900),
-      setTimeout(() => setShowCta(true), 1200),
+      setTimeout(() => setPhase(1), 50),
+      setTimeout(() => setPhase(2), 220),
+      setTimeout(() => setPhase(3), 450),
+      setTimeout(() => setShowCta(true), 600),
     ];
     return () => timers.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const hasStoreLinks = Boolean(APP_STORE_URL || PLAY_STORE_URL);
@@ -55,8 +59,8 @@ export default function PGDownloadPage() {
   }
 
   return (
-    <div className="flex h-dvh flex-col items-center overflow-hidden bg-background px-6 py-6 [@media(max-height:420px)]:py-3">
-      <div className="flex w-full max-w-sm flex-1 min-h-0 flex-col overflow-y-auto overscroll-contain">
+    <div className="flex flex-1 flex-col items-center px-6 py-6 [@media(max-height:420px)]:py-3">
+      <div className="flex w-full max-w-sm flex-1 min-h-0 flex-col">
         <button
           type="button"
           onClick={() => router.push(ROUTES.results)}
@@ -72,11 +76,21 @@ export default function PGDownloadPage() {
             Your PG. Everything near it.
           </h1>
           <p className="text-[14px] leading-relaxed text-muted-foreground [@media(max-height:420px)]:hidden">
-            100+ verified PGs near DU North Campus. Browse photos, take virtual visits, and shortlist rooms — all inside the Picapool app.
+            College, metro, food, gym — all mapped out. Get the full photos and a virtual walkthrough in the Picapool app.
           </p>
         </div>
 
         <div className="relative mt-8 min-h-[110px] w-full flex-1 shrink [@media(max-height:420px)]:mt-3 [@media(max-height:420px)]:min-h-[80px]">
+          <motion.div
+            initial={{ opacity: 1 }}
+            animate={{ opacity: phase >= 1 ? 0 : 1 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 z-20 flex items-center justify-center"
+            style={{ pointerEvents: phase >= 1 ? "none" : "auto" }}
+          >
+            <Loader2 className="size-6 animate-spin text-ink/40" />
+          </motion.div>
+
           <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
             {LOCATIONS.map((loc, index) => (
               <motion.line
@@ -152,7 +166,7 @@ export default function PGDownloadPage() {
             {platform === "ios" && <Apple className="size-4" />}
             {platform === "android" && <Smartphone className="size-4" />}
             {platform === "unknown" && <Smartphone className="size-4" />}
-            {hasStoreLinks ? "Get Picapool App" : "Get Early Access on WhatsApp"}
+            Book Your Dream PG Now
           </button>
 
           {hasStoreLinks && (
@@ -187,13 +201,6 @@ export default function PGDownloadPage() {
           <p className="text-center text-[12px] text-muted-foreground">
             Free. No spam. Already used by 5,000+ DU students.
           </p>
-          <button
-            type="button"
-            onClick={() => router.push(ROUTES.results)}
-            className="text-center text-[13px] text-ink/60 underline underline-offset-4 hover:text-ink"
-          >
-            Continue without app
-          </button>
         </motion.div>
       </div>
     </div>

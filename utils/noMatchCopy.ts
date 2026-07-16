@@ -6,9 +6,9 @@ import type { MoveTimeline } from "@/types/enums";
  */
 export function getNoMatchOnboardingMessage(moveTimeline: MoveTimeline | null, fallbackDate = "July 20"): string {
   switch (moveTimeline) {
-    case "this_week":
+    case "round_1_confirmed":
       return "We're onboarding PGs that fit this exact plan in the next 2–3 days.";
-    case "next_week":
+    case "waiting_round_2":
       return `We're onboarding 6 PGs that fit this exact plan by ${fallbackDate}.`;
     case "still_deciding":
     default:

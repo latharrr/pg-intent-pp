@@ -34,13 +34,28 @@ export const ROOM_TYPE_MICROCOPY: Record<RoomType, string> = {
   shared_3: "More the merrier, cheaper the rent",
 };
 
-export const MOVE_TIMELINES = ["this_week", "next_week", "still_deciding"] as const;
+export const MOVE_TIMELINES = ["round_1_confirmed", "waiting_round_2", "still_deciding"] as const;
 export type MoveTimeline = (typeof MOVE_TIMELINES)[number];
 
 export const MOVE_TIMELINE_LABELS: Record<MoveTimeline, string> = {
-  this_week: "This week",
-  next_week: "Next week",
+  round_1_confirmed: "After Round 1 allocation",
+  waiting_round_2: "After Round 2 allocation",
   still_deciding: "Still deciding",
+};
+
+export const MOVE_TIMELINE_MICROCOPY: Record<MoveTimeline, string> = {
+  round_1_confirmed: "Packing bags already",
+  waiting_round_2: "One round to go",
+  still_deciding: "No rush, just exploring",
+};
+
+export const CAMPUS_ZONES = ["north_campus", "south_campus", "off_campus"] as const;
+export type CampusZone = (typeof CAMPUS_ZONES)[number];
+
+export const CAMPUS_ZONE_LABELS: Record<CampusZone, string> = {
+  north_campus: "North Campus",
+  south_campus: "South Campus",
+  off_campus: "Off Campus",
 };
 
 export const GENDERS = ["male", "female"] as const;

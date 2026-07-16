@@ -4,7 +4,7 @@ import { useJourneyStore } from "@/lib/store/useJourneyStore";
 import { QuestionScreen } from "@/components/QuestionScreen";
 import { OptionCard } from "@/components/OptionCard";
 import { useAutoAdvance } from "@/utils/useAutoAdvance";
-import { MOVE_TIMELINE_LABELS, MOVE_TIMELINES } from "@/types/enums";
+import { MOVE_TIMELINE_LABELS, MOVE_TIMELINE_MICROCOPY, MOVE_TIMELINES } from "@/types/enums";
 import { getLandingConfirmation } from "../confirmationCopy";
 
 export function LandingQuestionScreen({ onAdvance }: { onAdvance: () => void }) {
@@ -14,14 +14,15 @@ export function LandingQuestionScreen({ onAdvance }: { onAdvance: () => void }) 
 
   return (
     <QuestionScreen
-      title="When do you land in Delhi?"
+      title="Where are you landing this semester?"
       unlockText={moveTimeline ? getLandingConfirmation(moveTimeline) : null}
     >
-      <div role="radiogroup" aria-label="When do you land in Delhi?" className="flex flex-col gap-3">
+      <div role="radiogroup" aria-label="Where are you landing this semester?" className="flex flex-col gap-3">
         {MOVE_TIMELINES.map((timeline) => (
           <OptionCard
             key={timeline}
             label={MOVE_TIMELINE_LABELS[timeline]}
+            description={MOVE_TIMELINE_MICROCOPY[timeline]}
             selected={moveTimeline === timeline}
             onSelect={() => {
               updateProfile({ moveTimeline: timeline });

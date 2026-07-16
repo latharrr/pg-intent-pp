@@ -50,6 +50,7 @@ export function ContactCaptureScreen() {
           email: null,
           whatsappOptIn,
           leadScore,
+          campusZone: profile.campusZone,
           budgetBand: profile.budgetBand,
           bestAreaName,
           moveTimeline: profile.moveTimeline,

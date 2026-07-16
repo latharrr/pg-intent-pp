@@ -8,6 +8,7 @@ export interface Lead {
   email: string | null;
   whatsappOptIn: boolean;
   leadScore: LeadScore | null;
+  campusZone: string | null;
   budgetBand: string | null;
   bestAreaName: string | null;
   moveTimeline: string | null;
