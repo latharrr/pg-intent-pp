@@ -176,7 +176,7 @@ export default function PGDownloadPage() {
                 {platform === "ios" && <Apple className="size-4" />}
                 {platform === "android" && <Smartphone className="size-4" />}
                 {platform === "unknown" && <Smartphone className="size-4" />}
-                Book Your Dream PG Now
+                Enjoy high-quality visit on app
               </>
             )}
           </button>
