@@ -14,10 +14,10 @@ export function CampusZoneQuestionScreen({ onAdvance }: { onAdvance: () => void 
 
   return (
     <QuestionScreen
-      title="Which campus are you aiming for?"
+      title="Which campus did you get?"
       unlockText={campusZone ? getCampusZoneConfirmation(campusZone) : null}
     >
-      <div role="radiogroup" aria-label="Which campus are you aiming for?" className="flex flex-col gap-3">
+      <div role="radiogroup" aria-label="Which campus did you get?" className="flex flex-col gap-3">
         {CAMPUS_ZONES.map((zone) => (
           <OptionCard
             key={zone}
