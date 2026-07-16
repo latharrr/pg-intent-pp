@@ -176,7 +176,7 @@ export default function PGDownloadPage() {
                 {platform === "ios" && <Apple className="size-4" />}
                 {platform === "android" && <Smartphone className="size-4" />}
                 {platform === "unknown" && <Smartphone className="size-4" />}
-                Enjoy high-quality visit on app
+                Enjoy high-quality Virtual Visit on app
               </>
             )}
           </button>
