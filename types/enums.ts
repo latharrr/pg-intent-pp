@@ -39,7 +39,7 @@ export type MoveTimeline = (typeof MOVE_TIMELINES)[number];
 
 export const MOVE_TIMELINE_LABELS: Record<MoveTimeline, string> = {
   this_week: "This week",
-  one_two_weeks: "In one or two weeks",
+  one_two_weeks: "1-2 weeks",
   not_sure: "Not sure yet",
 };
 
