@@ -14,10 +14,10 @@ export function LandingQuestionScreen({ onAdvance }: { onAdvance: () => void }) 
 
   return (
     <QuestionScreen
-      title="Where are you landing this semester?"
+      title="When will you land into a new life?"
       unlockText={moveTimeline ? getLandingConfirmation(moveTimeline) : null}
     >
-      <div role="radiogroup" aria-label="Where are you landing this semester?" className="flex flex-col gap-3">
+      <div role="radiogroup" aria-label="When will you land into a new life?" className="flex flex-col gap-3">
         {MOVE_TIMELINES.map((timeline) => (
           <OptionCard
             key={timeline}

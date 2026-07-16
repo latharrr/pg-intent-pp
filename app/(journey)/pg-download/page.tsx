@@ -29,6 +29,7 @@ export default function PGDownloadPage() {
   const [phase, setPhase] = useState(0);
   const [showCta, setShowCta] = useState(false);
   const [platform, setPlatform] = useState<"ios" | "android" | "unknown">("unknown");
+  const [isOpeningApp, setIsOpeningApp] = useState(false);
 
   useEffect(() => {
     goToStep("pg-download");
@@ -48,14 +49,14 @@ export default function PGDownloadPage() {
 
   function handleMainCta() {
     track("download_app_click", { from: "pg-download", platform });
+    setIsOpeningApp(true);
     if (bestLink) {
       window.open(bestLink, "_blank", "noopener,noreferrer");
-      return;
-    }
-    if (WHATSAPP_NUMBER) {
+    } else if (WHATSAPP_NUMBER) {
       const text = encodeURIComponent("Hi Picapool! I want to explore PGs near North Campus.");
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, "_blank", "noopener,noreferrer");
     }
+    setTimeout(() => setIsOpeningApp(false), 1500);
   }
 
   return (
@@ -76,7 +77,7 @@ export default function PGDownloadPage() {
             Your PG. Everything near it.
           </h1>
           <p className="text-[14px] leading-relaxed text-muted-foreground [@media(max-height:420px)]:hidden">
-            College, metro, food, gym — all mapped out. Get the full photos and a virtual walkthrough in the Picapool app.
+            College, metro, food, gym: all mapped out. Get the full photos and a virtual walkthrough in the Picapool app.
           </p>
         </div>
 
@@ -138,7 +139,7 @@ export default function PGDownloadPage() {
                   // Shift by the pin's own position fraction: a pin at x=92%
                   // moves 92% of its own width, so cards can never cross the
                   // map edge regardless of viewport width. Must be the CSS
-                  // `translate` property, not `transform` — framer-motion owns
+                  // `translate` property, not `transform`: framer-motion owns
                   // `transform` while animating scale and would clobber it.
                   translate: `-${loc.x}% -${loc.y}%`,
                 }}
@@ -161,12 +162,23 @@ export default function PGDownloadPage() {
           <button
             type="button"
             onClick={handleMainCta}
-            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-ink px-5 text-[15px] font-semibold text-white transition-colors hover:bg-ink/90"
+            disabled={isOpeningApp}
+            aria-busy={isOpeningApp}
+            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-ink px-5 text-[15px] font-semibold text-white transition-colors hover:bg-ink/90 disabled:opacity-80"
           >
-            {platform === "ios" && <Apple className="size-4" />}
-            {platform === "android" && <Smartphone className="size-4" />}
-            {platform === "unknown" && <Smartphone className="size-4" />}
-            Book Your Dream PG Now
+            {isOpeningApp ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Opening app...
+              </>
+            ) : (
+              <>
+                {platform === "ios" && <Apple className="size-4" />}
+                {platform === "android" && <Smartphone className="size-4" />}
+                {platform === "unknown" && <Smartphone className="size-4" />}
+                Book Your Dream PG Now
+              </>
+            )}
           </button>
 
           {hasStoreLinks && (
@@ -199,7 +211,7 @@ export default function PGDownloadPage() {
           )}
 
           <p className="text-center text-[12px] text-muted-foreground">
-            Free. No spam. Already used by 5,000+ DU students.
+            112+ verified PGs on the app. Free. No spam. Already used by 5,000+ DU students.
           </p>
         </motion.div>
       </div>

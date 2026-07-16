@@ -251,7 +251,7 @@ export function ResultsView({ pgs }: ResultsViewProps) {
 
               {hasPhone ? (
                 <p className="text-center text-[13px] text-muted-foreground">
-                  ✓ We&apos;ve got your number — we&apos;ll WhatsApp you.
+                  ✓ We&apos;ve got your number, we&apos;ll WhatsApp you.
                 </p>
               ) : (
                 <InlineWhatsAppCapture onSubmit={handleWhatsAppSubmit} context={captureContext} />
@@ -262,7 +262,7 @@ export function ResultsView({ pgs }: ResultsViewProps) {
               <div className="rounded-2xl border border-[#E5E5E5] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
                 <p className="text-[15px] font-medium text-ink">We don&apos;t have a web match that fits every filter.</p>
                 <p className="mt-1 text-[13px] text-muted-foreground">
-                  The Picapool app has 100+ verified PGs near North Campus. Open it to see everything.
+                  The Picapool app has 112+ verified PGs near North Campus. Open it to see everything.
                 </p>
                 <ul className="mt-3 flex flex-col gap-2 text-[16px] font-medium text-ink">
                   <li>
@@ -282,7 +282,7 @@ export function ResultsView({ pgs }: ResultsViewProps) {
 
               {hasPhone ? (
                 <p className="text-center text-[13px] text-muted-foreground">
-                  ✓ We&apos;ve got your number — we&apos;ll WhatsApp you.
+                  ✓ We&apos;ve got your number, we&apos;ll WhatsApp you.
                 </p>
               ) : (
                 <InlineWhatsAppCapture onSubmit={handleWhatsAppSubmit} context="no_match" />
@@ -299,7 +299,7 @@ export function ResultsView({ pgs }: ResultsViewProps) {
                   }}
                   className="font-medium text-ink underline underline-offset-4 hover:text-selected"
                 >
-                  Refer a PG — Earn ₹500
+                  Refer a PG, Earn ₹500
                 </button>
               </p>
             </div>

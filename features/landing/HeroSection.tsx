@@ -30,7 +30,7 @@ const CARDS: OnboardingCard[] = [
   {
     key: "arrival",
     tag: "Arrival",
-    headline: "Coming to North Campus for the first time?",
+    headline: "Coming to Campus for the first time?",
     accentLabel: "First-time visit",
     accentClassName: "bg-[#F0A878]",
     illustrationClassName: "bg-[#FBF0D2]",
@@ -39,7 +39,7 @@ const CARDS: OnboardingCard[] = [
   {
     key: "pressure",
     tag: "Pressure to plan",
-    headline: "Blind searches are costly — let’s turn the panic into a plan.",
+    headline: "Blind searches are costly. Let’s turn the panic into a plan.",
     accentLabel: "1–2 days. Zero guesswork.",
     accentClassName: "bg-[#AED9F1]",
     illustrationClassName: "bg-[#E3DEF6]",

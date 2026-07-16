@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Smartphone, Share2, Play } from "lucide-react";
+import { X, Smartphone, Share2, Play, Sparkles, Loader2 } from "lucide-react";
 import { PhoneUnlockForm } from "@/components/PhoneUnlockForm";
 import { openAppLink } from "@/lib/appLinks";
 import { track } from "@/lib/analytics";
@@ -26,6 +26,7 @@ export interface VirtualVisitModalProps {
  */
 export function VirtualVisitModal({ pg, isOpen, hasPhone, onClose, onShare, onSubmitPhone }: VirtualVisitModalProps) {
   const [unlocked, setUnlocked] = useState(hasPhone);
+  const [isOpeningApp, setIsOpeningApp] = useState(false);
 
   useEffect(() => {
     if (isOpen) setUnlocked(hasPhone);
@@ -45,6 +46,13 @@ export function VirtualVisitModal({ pg, isOpen, hasPhone, onClose, onShare, onSu
     track("virtual_visit_phone_submit", { pgId: pg.id });
     await onSubmitPhone(phone);
     setUnlocked(true);
+  }
+
+  function handleOpenApp() {
+    track("download_app_click", { from: "virtual_visit_cta", pgId: pg.id });
+    setIsOpeningApp(true);
+    openAppLink();
+    setTimeout(() => setIsOpeningApp(false), 1500);
   }
 
   return (
@@ -70,6 +78,29 @@ export function VirtualVisitModal({ pg, isOpen, hasPhone, onClose, onShare, onSu
               className="flex size-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
             >
               <X className="size-5" />
+            </button>
+          </div>
+
+          {/* App CTA - the web video is a low-fi placeholder, so we point straight at the real thing */}
+          <div className="px-4 pb-3">
+            <button
+              type="button"
+              onClick={handleOpenApp}
+              disabled={isOpeningApp}
+              aria-busy={isOpeningApp}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-[14px] font-semibold text-ink shadow-lg transition-transform active:scale-[0.98] disabled:opacity-80"
+            >
+              {isOpeningApp ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Opening app...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="size-4" />
+                  Enjoy high-quality visit on app
+                </>
+              )}
             </button>
           </div>
 
