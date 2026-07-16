@@ -411,11 +411,14 @@ export async function refreshReferralStats(): Promise<ReferralStatRow[]> {
   const buckets = new Map<string, Bucket>();
 
   for (const session of sessions.values()) {
-    if (!session.referralSource) continue;
-    let bucket = buckets.get(session.referralSource);
+    // Sessions with no [ref] attribution are direct/organic traffic, not
+    // noise to discard - bucket them under "direct" so the dashboard's totals
+    // reflect all traffic, not just referral-tagged visits.
+    const referralSource = session.referralSource || "direct";
+    let bucket = buckets.get(referralSource);
     if (!bucket) {
       bucket = { opens: 0, completed: 0, downloadClicks: 0, completionDurationsSec: [], dropOffSteps: {} };
-      buckets.set(session.referralSource, bucket);
+      buckets.set(referralSource, bucket);
     }
 
     bucket.opens += 1;
@@ -432,28 +435,46 @@ export async function refreshReferralStats(): Promise<ReferralStatRow[]> {
   }
 
   const lastUpdated = new Date().toISOString();
-  const statRows: ReferralStatRow[] = Array.from(buckets.entries())
-    .map(([referralSource, bucket]) => {
-      const topDropOffStep = Object.entries(bucket.dropOffSteps).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "";
-      const avgTimeToCompleteSec: number | "" = bucket.completionDurationsSec.length
-        ? Math.round(
-            bucket.completionDurationsSec.reduce((sum, d) => sum + d, 0) / bucket.completionDurationsSec.length,
-          )
-        : "";
 
-      return {
-        referralSource,
-        opens: bucket.opens,
-        completed: bucket.completed,
-        completionRate: bucket.opens ? `${Math.round((bucket.completed / bucket.opens) * 100)}%` : "0%",
-        avgTimeToCompleteSec,
-        dropOffCount: bucket.opens - bucket.completed,
-        topDropOffStep,
-        downloadClicks: bucket.downloadClicks,
-        lastUpdated,
-      };
-    })
+  function toStatRow(referralSource: string, bucket: Bucket): ReferralStatRow {
+    const topDropOffStep = Object.entries(bucket.dropOffSteps).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "";
+    const avgTimeToCompleteSec: number | "" = bucket.completionDurationsSec.length
+      ? Math.round(bucket.completionDurationsSec.reduce((sum, d) => sum + d, 0) / bucket.completionDurationsSec.length)
+      : "";
+
+    return {
+      referralSource,
+      opens: bucket.opens,
+      completed: bucket.completed,
+      completionRate: bucket.opens ? `${Math.round((bucket.completed / bucket.opens) * 100)}%` : "0%",
+      avgTimeToCompleteSec,
+      dropOffCount: bucket.opens - bucket.completed,
+      topDropOffStep,
+      downloadClicks: bucket.downloadClicks,
+      lastUpdated,
+    };
+  }
+
+  const statRows: ReferralStatRow[] = Array.from(buckets.entries())
+    .map(([referralSource, bucket]) => toStatRow(referralSource, bucket))
     .sort((a, b) => b.opens - a.opens);
+
+  // Overview row summed across every source (direct + all referrals), so the
+  // dashboard shows total clicks/completion/drop-off/downloads at a glance
+  // without needing to add up each source's row by hand.
+  if (statRows.length > 0) {
+    const totalBucket: Bucket = { opens: 0, completed: 0, downloadClicks: 0, completionDurationsSec: [], dropOffSteps: {} };
+    for (const bucket of buckets.values()) {
+      totalBucket.opens += bucket.opens;
+      totalBucket.completed += bucket.completed;
+      totalBucket.downloadClicks += bucket.downloadClicks;
+      totalBucket.completionDurationsSec.push(...bucket.completionDurationsSec);
+      for (const [step, count] of Object.entries(bucket.dropOffSteps)) {
+        totalBucket.dropOffSteps[step] = (totalBucket.dropOffSteps[step] ?? 0) + count;
+      }
+    }
+    statRows.unshift(toStatRow("Total (all traffic)", totalBucket));
+  }
 
   const statsSheet = await getOrCreateSheet(doc, "ReferralStats", REFERRAL_STATS_HEADER);
   await statsSheet.clearRows();
