@@ -152,7 +152,7 @@ export default function PGDownloadPage() {
             {platform === "ios" && <Apple className="size-4" />}
             {platform === "android" && <Smartphone className="size-4" />}
             {platform === "unknown" && <Smartphone className="size-4" />}
-            {hasStoreLinks ? "Get Picapool App" : "Book Your Dream PG Now"}
+            {hasStoreLinks ? "Get Picapool App" : "Enjoy high-quality Virtual Visit on app"}
           </button>
 
           {hasStoreLinks && (
