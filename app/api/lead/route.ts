@@ -9,6 +9,7 @@ const leadSchema = z.object({
   email: z.string().email().nullable(),
   whatsappOptIn: z.boolean(),
   leadScore: z.enum(["hot", "warm", "cold"]).nullable(),
+  campusZone: z.string().nullable().optional(),
   budgetBand: z.string().nullable(),
   bestAreaName: z.string().nullable(),
   moveTimeline: z.string().nullable(),
@@ -46,6 +47,7 @@ export async function POST(request: Request) {
 
   const lead: Lead = {
     ...parsed.data,
+    campusZone: parsed.data.campusZone ?? null,
     referralSource: parsed.data.referralSource ?? null,
     createdAt: new Date().toISOString(),
   };

@@ -19,7 +19,7 @@ export interface InlineWhatsAppCaptureProps {
 
 const HEADLINES: Record<string, string> = {
   match: "Want us to hold this plan?",
-  no_match: "Save your plan — we'll update you.",
+  no_match: "Save your plan, we'll update you.",
   shortlist: "Want updates on your shortlisted PGs?",
 };
 

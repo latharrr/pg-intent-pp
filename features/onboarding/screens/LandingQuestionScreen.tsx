@@ -4,7 +4,7 @@ import { useJourneyStore } from "@/lib/store/useJourneyStore";
 import { QuestionScreen } from "@/components/QuestionScreen";
 import { OptionCard } from "@/components/OptionCard";
 import { useAutoAdvance } from "@/utils/useAutoAdvance";
-import { MOVE_TIMELINE_LABELS, MOVE_TIMELINES } from "@/types/enums";
+import { MOVE_TIMELINE_LABELS, MOVE_TIMELINE_MICROCOPY, MOVE_TIMELINES } from "@/types/enums";
 import { getLandingConfirmation } from "../confirmationCopy";
 
 export function LandingQuestionScreen({ onAdvance }: { onAdvance: () => void }) {
@@ -22,6 +22,7 @@ export function LandingQuestionScreen({ onAdvance }: { onAdvance: () => void }) 
           <OptionCard
             key={timeline}
             label={MOVE_TIMELINE_LABELS[timeline]}
+            description={MOVE_TIMELINE_MICROCOPY[timeline]}
             selected={moveTimeline === timeline}
             onSelect={() => {
               updateProfile({ moveTimeline: timeline });

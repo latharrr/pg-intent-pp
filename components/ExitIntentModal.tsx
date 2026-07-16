@@ -34,7 +34,7 @@ export function ExitIntentModal({ isOpen, remainingQuestions, onContinue, onLeav
             className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-lg"
           >
             <p className="text-[18px] font-semibold text-ink">
-              Wait — your plan is almost ready.
+              Wait, your plan is almost ready.
             </p>
             <p className="mt-2 text-[14px] text-muted-foreground">
               Just {remainingQuestions} more question{remainingQuestions !== 1 ? "s" : ""}.

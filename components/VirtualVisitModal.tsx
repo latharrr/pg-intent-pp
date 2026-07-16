@@ -1,12 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Smartphone, Share2, Play, Loader2 } from "lucide-react";
-import { Input } from "@/components/Input";
-import { phoneSchema, type PhoneValues } from "@/features/contact/contactSchema";
+import { X, Smartphone, Share2, Play, Sparkles, Loader2 } from "lucide-react";
+import { PhoneUnlockForm } from "@/components/PhoneUnlockForm";
 import { openAppLink } from "@/lib/appLinks";
 import { track } from "@/lib/analytics";
 import type { PG } from "@/types";
@@ -29,13 +26,7 @@ export interface VirtualVisitModalProps {
  */
 export function VirtualVisitModal({ pg, isOpen, hasPhone, onClose, onShare, onSubmitPhone }: VirtualVisitModalProps) {
   const [unlocked, setUnlocked] = useState(hasPhone);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<PhoneValues>({ resolver: zodResolver(phoneSchema) });
+  const [isOpeningApp, setIsOpeningApp] = useState(false);
 
   useEffect(() => {
     if (isOpen) setUnlocked(hasPhone);
@@ -51,15 +42,17 @@ export function VirtualVisitModal({ pg, isOpen, hasPhone, onClose, onShare, onSu
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  async function handleUnlock(values: PhoneValues) {
-    setIsSubmitting(true);
+  async function handleUnlock(phone: string) {
     track("virtual_visit_phone_submit", { pgId: pg.id });
-    try {
-      await onSubmitPhone(values.phone);
-      setUnlocked(true);
-    } finally {
-      setIsSubmitting(false);
-    }
+    await onSubmitPhone(phone);
+    setUnlocked(true);
+  }
+
+  function handleOpenApp() {
+    track("download_app_click", { from: "virtual_visit_cta", pgId: pg.id });
+    setIsOpeningApp(true);
+    openAppLink();
+    setTimeout(() => setIsOpeningApp(false), 1500);
   }
 
   return (
@@ -88,11 +81,34 @@ export function VirtualVisitModal({ pg, isOpen, hasPhone, onClose, onShare, onSu
             </button>
           </div>
 
+          {/* App CTA - the web video is a low-fi placeholder, so we point straight at the real thing */}
+          <div className="px-4 pb-3">
+            <button
+              type="button"
+              onClick={handleOpenApp}
+              disabled={isOpeningApp}
+              aria-busy={isOpeningApp}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-[14px] font-semibold text-ink shadow-lg transition-transform active:scale-[0.98] disabled:opacity-80"
+            >
+              {isOpeningApp ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Opening app...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="size-4" />
+                  Enjoy high-quality visit on app
+                </>
+              )}
+            </button>
+          </div>
+
           {/* Video area - ambient motion suggests it's live even before real footage is unlocked */}
           <div className="relative flex flex-1 items-center justify-center bg-black">
             <div
               className="flex aspect-[9/16] w-full max-w-md flex-col items-center justify-center bg-ink/80 transition-[filter] duration-500"
-              style={{ filter: unlocked ? "none" : "blur(12px)" }}
+              style={{ filter: unlocked ? "none" : "blur(6px)" }}
             >
               <motion.div
                 animate={{ opacity: [0.6, 1, 0.6] }}
@@ -107,38 +123,13 @@ export function VirtualVisitModal({ pg, isOpen, hasPhone, onClose, onShare, onSu
 
             {!unlocked && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/50 px-6">
-                <motion.form
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  onSubmit={handleSubmit(handleUnlock)}
-                  className="flex w-full max-w-sm flex-col gap-3 rounded-2xl bg-white p-5 text-center shadow-xl"
-                  noValidate
-                >
-                  <p className="text-[15px] font-semibold text-ink">Enter your number to watch</p>
-                  <p className="text-[13px] text-muted-foreground">We&apos;ll unlock the video right away. No spam.</p>
-
-                  <div className="flex items-center gap-2 rounded-lg border-[1.5px] border-ink/30 pl-4 text-left focus-within:border-selected">
-                    <span className="text-[15px] text-muted-foreground">+91</span>
-                    <Input
-                      type="tel"
-                      placeholder="98765 43210"
-                      aria-label="WhatsApp number"
-                      error={!!errors.phone}
-                      className="border-none pl-0 focus-visible:ring-0"
-                      {...register("phone")}
-                    />
-                  </div>
-                  {errors.phone && <p className="text-left text-[11.5px] text-note">{errors.phone.message}</p>}
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="mt-1 flex h-12 items-center justify-center gap-2 rounded-xl bg-selected text-[14px] font-semibold text-white transition-colors hover:bg-selected/90 disabled:opacity-60"
-                  >
-                    {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : <Play className="size-4 fill-current" />}
-                    Watch Virtual Visit
-                  </button>
-                </motion.form>
+                <PhoneUnlockForm
+                  title="Enter your number to watch"
+                  subtitle="We'll unlock the video right away. No spam."
+                  ctaLabel="Watch Virtual Visit"
+                  ctaIcon={<Play className="size-4 fill-current" />}
+                  onSubmit={handleUnlock}
+                />
               </div>
             )}
           </div>

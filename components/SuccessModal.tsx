@@ -75,7 +75,7 @@ export function SuccessModal({ isOpen, onClose }: SuccessModalProps) {
             </p>
 
             <p className="mt-5 text-[14px] leading-relaxed text-muted-foreground">
-              Want to browse 100+ verified PGs now? Open the Picapool app.
+              Want to browse 112+ verified PGs now? Open the Picapool app.
             </p>
 
             <button

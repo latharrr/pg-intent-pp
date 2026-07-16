@@ -7,10 +7,11 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
+import { MapIllustration } from "@/components/MapIllustration";
+import { AREAS } from "@/lib/data/areas";
 import {
   BlobShocked,
   StarWorried,
-  StarSad,
   StarHunter,
   CloudsDecoration,
 } from "./onboardingIllustrations";
@@ -29,29 +30,20 @@ const CARDS: OnboardingCard[] = [
   {
     key: "arrival",
     tag: "Arrival",
-    headline: "Coming to North Campus for the first time?",
-    accentLabel: "Planning your first visit?",
+    headline: "Coming to Campus for the first time?",
+    accentLabel: "First-time visit",
     accentClassName: "bg-[#F0A878]",
     illustrationClassName: "bg-[#FBF0D2]",
     Illustration: BlobShocked,
   },
   {
     key: "pressure",
-    tag: "Pressure",
-    headline: "Blind Searches are costly; you’ve just 1–2 days to pick.",
-    accentLabel: "Rushed into choosing?",
+    tag: "Pressure to plan",
+    headline: "Blind searches are costly. Let’s turn the panic into a plan.",
+    accentLabel: "1–2 days. Zero guesswork.",
     accentClassName: "bg-[#AED9F1]",
     illustrationClassName: "bg-[#E3DEF6]",
     Illustration: StarWorried,
-  },
-  {
-    key: "clarity",
-    tag: "Clarity",
-    headline: "We can turns your panic into a plan.",
-    accentLabel: "From Survival to Plan",
-    accentClassName: "bg-[#F5B84E]",
-    illustrationClassName: "bg-[#F9D2CE]",
-    Illustration: StarSad,
   },
   {
     key: "support",
@@ -128,6 +120,20 @@ export function HeroSection() {
         <ArrowLeft className="size-5" />
       </button>
 
+      <button
+        type="button"
+        onClick={() => {
+          track("continue_click", { from: "hero_skip" });
+          router.push(ROUTES.plan);
+        }}
+        className={cn(
+          "absolute right-4 top-4 z-20 rounded-full px-3 py-2 text-[13px] font-medium text-ink/60 transition-opacity hover:text-ink",
+          activeIndex === LAST_INDEX ? "pointer-events-none opacity-0" : "opacity-100",
+        )}
+      >
+        Skip
+      </button>
+
       <div
         ref={scrollRef}
         className="flex min-h-0 flex-1 snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-4 pt-20 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
@@ -150,12 +156,8 @@ export function HeroSection() {
                 {card.tag}
               </span>
               <h2 className="text-[26px] font-semibold leading-[1.15] text-ink">{card.headline}</h2>
-              <span
-                className={cn(
-                  "w-fit rounded-full px-4 py-2.5 text-[14px] font-medium text-ink",
-                  card.accentClassName,
-                )}
-              >
+              <span className="inline-flex w-fit items-center gap-1.5 text-[13px] font-medium text-ink/60">
+                <span className={cn("size-1.5 shrink-0 rounded-full", card.accentClassName)} aria-hidden="true" />
                 {card.accentLabel}
               </span>
             </motion.div>
@@ -166,7 +168,13 @@ export function HeroSection() {
                 card.illustrationClassName,
               )}
             >
-              <card.Illustration className="relative z-10 h-[55%] w-[55%]" />
+              {card.key === "support" ? (
+                <div className="h-[85%] w-[90%]">
+                  <MapIllustration areas={AREAS} size="large" />
+                </div>
+              ) : (
+                <card.Illustration className="relative z-10 h-[55%] w-[55%]" />
+              )}
             </div>
           </div>
         ))}
