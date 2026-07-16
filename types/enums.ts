@@ -34,19 +34,19 @@ export const ROOM_TYPE_MICROCOPY: Record<RoomType, string> = {
   shared_3: "More the merrier, cheaper the rent",
 };
 
-export const MOVE_TIMELINES = ["round_1_confirmed", "waiting_round_2", "still_deciding"] as const;
+export const MOVE_TIMELINES = ["this_week", "one_two_weeks", "not_sure"] as const;
 export type MoveTimeline = (typeof MOVE_TIMELINES)[number];
 
 export const MOVE_TIMELINE_LABELS: Record<MoveTimeline, string> = {
-  round_1_confirmed: "After Round 1 allocation",
-  waiting_round_2: "After Round 2 allocation",
-  still_deciding: "Still deciding",
+  this_week: "This week",
+  one_two_weeks: "In one or two weeks",
+  not_sure: "Not sure yet",
 };
 
 export const MOVE_TIMELINE_MICROCOPY: Record<MoveTimeline, string> = {
-  round_1_confirmed: "Packing bags already",
-  waiting_round_2: "One round to go",
-  still_deciding: "No rush, just exploring",
+  this_week: "Packing bags already",
+  one_two_weeks: "Getting things ready",
+  not_sure: "No rush, just exploring",
 };
 
 export const CAMPUS_ZONES = ["north_campus", "south_campus", "off_campus"] as const;

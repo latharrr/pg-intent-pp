@@ -13,11 +13,11 @@ export interface WizardStepDef {
  * 4-question PG Hunt Planner aligned with the UX blueprint.
  * Each question shows its own inline confirmation line and auto-advances
  * directly to the next question - no separate bridge screens.
- * Order: admission timing -> campus -> room sharing -> budget.
+ * Order: campus -> move timing -> room sharing -> budget.
  */
 export const WIZARD_STEPS: WizardStepDef[] = [
-  { id: "landing", progressIndex: 1, interaction: "single-auto" },
-  { id: "campus", progressIndex: 2, interaction: "single-auto" },
+  { id: "campus", progressIndex: 1, interaction: "single-auto" },
+  { id: "landing", progressIndex: 2, interaction: "single-auto" },
   { id: "room-type", progressIndex: 3, interaction: "single-auto" },
   { id: "budget", progressIndex: 4, interaction: "single-auto" },
 ];
