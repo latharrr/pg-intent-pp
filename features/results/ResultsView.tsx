@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronDown, ChevronUp, Unlock } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronUp, Unlock, Smartphone, Loader2 } from "lucide-react";
 import { useJourneyStore, useRecommendedAreaName } from "@/lib/store/useJourneyStore";
 import { runMatching } from "@/lib/matching/runMatching";
 import { AREAS } from "@/lib/data/areas";
@@ -20,6 +20,7 @@ import { computeLeadScore } from "@/lib/leadScore";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/constants/routes";
+import { openAppLink } from "@/lib/appLinks";
 import type { PG, PgMatch, UserProfile } from "@/types";
 
 const MAX_VISIBLE_MATCHES = 3;
@@ -54,6 +55,7 @@ export function ResultsView({ pgs }: ResultsViewProps) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [dismissedMoreComing, setDismissedMoreComing] = useState(false);
   const [resultsUnlocked, setResultsUnlocked] = useState(hasPhone);
+  const [isOpeningApp, setIsOpeningApp] = useState(false);
   const containerRef = useFocusOnChange<HTMLDivElement>("results");
 
   const recommendations = useMemo(
@@ -111,6 +113,13 @@ export function ResultsView({ pgs }: ResultsViewProps) {
       return;
     }
     void navigator.clipboard.writeText(text);
+  }
+
+  function handleOpenApp() {
+    track("download_app_click", { from: "results_no_match" });
+    setIsOpeningApp(true);
+    openAppLink();
+    setTimeout(() => setIsOpeningApp(false), 1500);
   }
 
   async function submitLead(phone: string) {
@@ -278,6 +287,25 @@ export function ResultsView({ pgs }: ResultsViewProps) {
                     Move-in: {summary.landing}
                   </li>
                 </ul>
+                <button
+                  type="button"
+                  onClick={handleOpenApp}
+                  disabled={isOpeningApp}
+                  aria-busy={isOpeningApp}
+                  className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-ink px-4 text-[14px] font-semibold text-white transition-colors hover:bg-ink/90 disabled:opacity-80"
+                >
+                  {isOpeningApp ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      Opening app...
+                    </>
+                  ) : (
+                    <>
+                      <Smartphone className="size-4" />
+                      Find More PGs on App
+                    </>
+                  )}
+                </button>
               </div>
 
               {hasPhone ? (

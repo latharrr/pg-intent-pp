@@ -29,6 +29,31 @@ function getAuth() {
   });
 }
 
+// Tab names in the shared "PG Lead and PG intent sheet" spreadsheet. Looked
+// up by title (trimmed, since tabs have picked up trailing spaces before) -
+// NOT by sheetsByIndex position. Whoever edits the spreadsheet can freely
+// reorder or insert tabs; a fixed-index lookup broke silently the moment a
+// teammate added new tabs ahead of these (PGs got read as if it were the
+// leads tab, leads got written into an unrelated tab, analytics events got
+// written into a tab with no header row).
+const PGS_TAB_TITLE = "PGs";
+const LEADS_TAB_TITLE = "API + Creator List";
+const ANALYTICS_TAB_TITLE = "Analytics";
+
+function findSheetByTitle(doc: GoogleSpreadsheet, title: string) {
+  return doc.sheetsByIndex.find((sheet) => sheet.title.trim() === title) ?? null;
+}
+
+function requireSheetByTitle(doc: GoogleSpreadsheet, title: string) {
+  const sheet = findSheetByTitle(doc, title);
+  if (!sheet) {
+    throw new Error(
+      `Expected a "${title}" tab in spreadsheet "${doc.title}" but found none (tabs: ${doc.sheetsByIndex.map((s) => s.title).join(", ")})`,
+    );
+  }
+  return sheet;
+}
+
 export interface SheetConfig {
   hasCredentials: boolean;
   hasPgSheet: boolean;
@@ -58,7 +83,7 @@ export async function fetchPGsFromSheet(): Promise<PG[]> {
 
   const doc = new GoogleSpreadsheet(PG_SHEET_ID, getAuth());
   await doc.loadInfo();
-  const sheet = doc.sheetsByIndex[0];
+  const sheet = requireSheetByTitle(doc, PGS_TAB_TITLE);
   const rows = await sheet.getRows();
 
   return rows
@@ -100,8 +125,8 @@ export async function fetchPGsFromSheet(): Promise<PG[]> {
  * timestamp | name | phone | email | whatsappOptIn | campusZone | budgetBand | roomType | moveTimeline | bestAreaName | leadScore | referralSource
  *
  * When GOOGLE_LEAD_SHEET_ID and GOOGLE_PG_SHEET_ID point to the same spreadsheet
- * (one sheet, two tabs), leads go to the second tab (index 1) so they don't
- * collide with the PG inventory on the first tab.
+ * (one sheet, several tabs), leads go to the tab titled "API + Creator List"
+ * so they don't collide with the PG inventory tab.
  */
 export async function appendLeadToSheet(lead: Lead & { bestAreaName?: string | null }): Promise<void> {
   if (!LEAD_SHEET_ID || !GOOGLE_SERVICE_ACCOUNT_EMAIL || !GOOGLE_PRIVATE_KEY) {
@@ -111,7 +136,7 @@ export async function appendLeadToSheet(lead: Lead & { bestAreaName?: string | n
   const doc = new GoogleSpreadsheet(LEAD_SHEET_ID, getAuth());
   await doc.loadInfo();
   const sharedSpreadsheet = LEAD_SHEET_ID === PG_SHEET_ID;
-  const sheet = sharedSpreadsheet ? (doc.sheetsByIndex[1] ?? doc.sheetsByIndex[0]) : doc.sheetsByIndex[0];
+  const sheet = sharedSpreadsheet ? requireSheetByTitle(doc, LEADS_TAB_TITLE) : doc.sheetsByIndex[0];
 
   await sheet.addRow({
     timestamp: lead.createdAt,
@@ -202,7 +227,7 @@ export async function appendAnalyticsEvents(rows: AnalyticsEventRow[]): Promise<
 
   const doc = new GoogleSpreadsheet(PG_SHEET_ID, getAuth());
   await doc.loadInfo();
-  const sheet = doc.sheetsByIndex[2] ?? doc.sheetsByIndex[0];
+  const sheet = requireSheetByTitle(doc, ANALYTICS_TAB_TITLE);
 
   const sheetRows = rows.map((r) => ({
     date: formatDelhiDate(r.timestamp),
@@ -359,7 +384,7 @@ export async function refreshReferralStats(): Promise<ReferralStatRow[]> {
 
   const doc = new GoogleSpreadsheet(PG_SHEET_ID, getAuth());
   await doc.loadInfo();
-  const analyticsSheet = doc.sheetsByTitle.Analytics ?? doc.sheetsByIndex[2] ?? doc.sheetsByIndex[0];
+  const analyticsSheet = requireSheetByTitle(doc, ANALYTICS_TAB_TITLE);
   const rows = await analyticsSheet.getRows({ limit: 50000 });
 
   const sessions = new Map<string, SessionAgg>();
