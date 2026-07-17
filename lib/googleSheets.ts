@@ -139,7 +139,9 @@ export async function appendLeadToSheet(lead: Lead & { bestAreaName?: string | n
   const sheet = sharedSpreadsheet ? requireSheetByTitle(doc, LEADS_TAB_TITLE) : doc.sheetsByIndex[0];
 
   await sheet.addRow({
-    timestamp: lead.createdAt,
+    // Delhi-local, human-readable - the raw UTC ISO string read as "wrong
+    // time" (5.5h behind) for the team working the sheet in IST.
+    timestamp: `${formatDelhiDate(lead.createdAt)}, ${formatDelhiTime(lead.createdAt)}`,
     name: lead.name ?? "",
     phone: lead.phone ?? "",
     email: lead.email ?? "",
